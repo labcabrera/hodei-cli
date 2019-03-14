@@ -1,0 +1,25 @@
+= Hodei cli
+
+== Introducción
+
+Herramienta para simplificar diferentes procesos de Hodei.
+
+Para ver las opciones utilizar la opcion `hodei-cli --help`
+
+== Comandos
+
+|===
+|Acción                     |Comando
+|Sincronización de países   |`hodei-cli -pull-countries`
+|Validacion de IBAN         |`hodei-cli -iban 1234567890`
+|===
+
+== Instalación
+
+----
+go get github.com/streadway/amqp
+
+./gradlew goClean goBuild
+
+.gogradle/hodei-cli-linux-amd64
+----
