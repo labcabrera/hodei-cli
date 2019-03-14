@@ -8,7 +8,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
-const version = "0.1.0-SNAPSHOT"
+const version = "0.1.0"
 const exchangeSepa = "cnp.sepa"
 const exchangeReferential = "cnp.referential"
 
