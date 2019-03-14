@@ -18,12 +18,44 @@ Para ver las opciones utilizar la opcion `hodei-cli --help`
 |Validacion de IBAN                           |`hodei-cli -iban 1234567890`
 |===
 
-== Instalación
+=== Sincronización de pólizas
+
+Sincronización de una póliza a partir de su identificador de MongoDB:
+
+----
+hodei-cli -pull-policies -product ppi -id 12345 -u cnp -a cnp
+----
+
+Sincronización de todas las pólizas de un acuerdo marco:
+
+----
+hodei-cli-linux-amd64 -pull-policies -product ppi -agreement 731 -u cnp -a cnp
+----
+
+== Instalación y ejecución
+
+En primer lugar deberemos definir la variable de sistema `APP_AMQP_URI` que utilizaremos para abrir
+la conexión con RabbitMQ:
+
+----
+APP_AMQP_URI=guest:guest@localhost:5672/
+----
+
+Para obtener las dependencias de _amqp_ ejecutaremos el comando:
 
 ----
 go get github.com/streadway/amqp
+----
 
+Finalmente podremos hacer la construcción a partir del plugin de gradle:
+
+----
 ./gradlew goClean goBuild
+----
 
-.gogradle/hodei-cli-linux-amd64
+La construcción generá el binario dependiente de la plataforma en la carpeta _./.gogradle/_ que 
+podremos ejecutar:
+
+----
+.gogradle/hodei-cli-linux-amd64 -help
 ----
