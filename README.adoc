@@ -9,9 +9,13 @@ Para ver las opciones utilizar la opcion `hodei-cli --help`
 == Comandos
 
 |===
-|Acción                     |Comando
-|Sincronización de países   |`hodei-cli -pull-countries`
-|Validacion de IBAN         |`hodei-cli -iban 1234567890`
+|Acción                                       |Comando
+|Sincronización de países                     |`hodei-cli -pull-countries`
+|Sincronización de productos y acuerdos marco |`hodei-cli -pull-products`
+|Sincronización de personas                   |`hodei-cli -pull-person $personId`
+|Sincronización de entidades legales          |`hodei-cli -pull-legal $legalEntityId`
+|Sincronización de pólizas                    |`hodei-cli -pull-policies -product $productId -policyId $policyId`
+|Validacion de IBAN                           |`hodei-cli -iban 1234567890`
 |===
 
 == Instalación
