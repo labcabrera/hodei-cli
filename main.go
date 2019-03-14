@@ -3,11 +3,20 @@ package main
 import (
 	"fmt"
 	"log"
+	"flag"
 	"github.com/streadway/amqp"
 )
 
+const exchangeSepa = "cnp.sepa"
+const routingKeyIbanValidation = "iban.validation"
+
 func main() {
-	fmt.Printf("Hodei cli 0.1.0-SNAPSHOT\n")
+	fmt.Println("Hodei cli 0.1.0-SNAPSHOT")
+
+	iban := flag.String("iban", "xxx", "IBAN validation")
+	flag.Parse()
+
+	fmt.Println("IBAN: ", *iban)
 	
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	failOnError(err, "Failed to connect to RabbitMQ")
@@ -19,11 +28,11 @@ func main() {
 	
 	body := `{
 		"countryCode": "ESP",
-		"iban": "invalid-iban"
+		"iban": "` + *iban + `"
 	}`
 	err = ch.Publish(
-		"cnp.sepa",							// exchange
-		"iban.validation",					// routing key
+		exchangeSepa,						// exchange
+		routingKeyIbanValidation,			// routing key
 		false,								// mandatory
 		false,								// immediate
 		amqp.Publishing {

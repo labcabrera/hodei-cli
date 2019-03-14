@@ -3,3 +3,23 @@
 == Introducción
 
 Herramienta para simplificar diferentes procesos de Hodei.
+
+== Comandos
+
+Validacion de IBAN:
+
+----
+hodei-cli -iban 12345...67890
+----
+
+
+
+== Instalación
+
+----
+go get github.com/streadway/amqp
+
+./gradlew clean build
+
+.gogradle/hodei-cli-linux-amd64
+----
