@@ -7,17 +7,44 @@ import (
 	"github.com/streadway/amqp"
 )
 
+const version = "0.1.0-SNAPSHOT"
 const exchangeSepa = "cnp.sepa"
 const routingKeyIbanValidation = "iban.validation"
 
 func main() {
-	fmt.Println("Hodei cli 0.1.0-SNAPSHOT")
-
-	iban := flag.String("iban", "xxx", "IBAN validation")
+	// Argument variables
+	pullCountries := flag.Bool("pull-countries", false, "Pull countries over referential API")
+	pullProducts := flag.Bool("pull-products", false, "Pull products and agreements over referential API")
+	pullPolicies := flag.Bool("pull-ppi-policies", false, "Pull PPI policies")
+	policyId := flag.String("policy-id", "", "MongoDB Policy identifier")
+	iban := flag.String("iban", "", "IBAN validation")
+	verbose := flag.Bool("v", false, "Verbose")
+	printVersion := flag.Bool("version", false, "Print version")
 	flag.Parse()
-
-	fmt.Println("IBAN: ", *iban)
 	
+	if(*printVersion) {
+		fmt.Println("Hodei cli ", version)
+		return
+	}
+	if(*iban != "") {
+		sendIbanValdidationMessage(*iban, *verbose)
+		return
+	}
+	if(*pullCountries) {
+		sendPullCountryMessage(*verbose)
+	}
+	if(*pullProducts) {
+		sendPullProductsMessage(*verbose)
+	}
+	if(*pullPolicies) {
+		sendPullPoliciesMessage(*policyId, *verbose)
+	}
+}
+
+func sendIbanValdidationMessage(iban string, verbose bool) {
+	if(verbose) {
+		fmt.Println("Validating IBAN", iban)
+	}
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
@@ -28,7 +55,7 @@ func main() {
 	
 	body := `{
 		"countryCode": "ESP",
-		"iban": "` + *iban + `"
+		"iban": "` + iban + `"
 	}`
 	err = ch.Publish(
 		exchangeSepa,						// exchange
@@ -41,8 +68,19 @@ func main() {
 		})
 	
 	failOnError(err, "Failed to publish a message")
+}
 
-	fmt.Printf("Ciao\n")
+func sendPullCountryMessage(verbose bool) {
+	if(verbose) {
+		fmt.Println("Pulling countries from referential API")	
+	}
+	fmt.Println("Not implemented: pull countries")
+}
+
+func sendPullProductsMessage(verbose bool) {
+}
+
+func sendPullPoliciesMessage(policyId string, verbose bool) {
 }
 
 func failOnError(err error, msg string) {
