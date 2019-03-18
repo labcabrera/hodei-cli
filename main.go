@@ -49,11 +49,11 @@ func main() {
 	}
 	if(*pullPerson) {
 		auth := modules.Authorization{*username, *authorities}
-		modules.CustomerSearch(*id, auth, *verbose)
+		modules.CustomerSearch(*id, "person", auth, *verbose)
 	}
 	if(*pullLegal) {
-		//TODO
-		fmt.Println("Not implemented")
+		auth := modules.Authorization{*username, *authorities}
+		modules.CustomerSearch(*id, "legal", auth, *verbose)
 	}
 	if(*pullPolicies) {
 		request := modules.PolicyPullRequest{*id, *externalCode, *agreement}
