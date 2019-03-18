@@ -3,6 +3,7 @@ package client
 import(
 	"log"
 	"os"
+	"time"
 	"github.com/streadway/amqp"
 )
 
@@ -27,16 +28,20 @@ func SendMessageWithHeaders(exchange string, routingKey string, body string, hea
 	if(verbose) {
 		log.Printf("Sending message: %s", body)
 	}
+
+	msg := amqp.Publishing{
+		DeliveryMode:	amqp.Persistent,
+		Timestamp:		time.Now(),
+		ContentType:	"text/plain",
+		Body:			[]byte(body),
+	}
+
 	err = ch.Publish(
 		exchange,
 		routingKey,
 		false,			// mandatory
 		false,			// inmediate
-		amqp.Publishing {
-			ContentType:	"text/plain",
-			Body:			[]byte(body),
-			Headers:		headers,
-		})
+		msg)
 	if(err != nil) {
 		log.Fatalf("%s: %s", "Error opening connection", err)
 	} else if(verbose) {
