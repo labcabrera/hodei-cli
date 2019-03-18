@@ -2,15 +2,15 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"flag"
-	"os"
+	"log"
 	"encoding/json"
 	"github.com/streadway/amqp"
+	"github.com/labcabrera/hodei-cli/modules"
+	"github.com/labcabrera/hodei-cli/client"
 )
 
 const version = "0.2.0-SNAPSHOT"
-const exchangeSepa = "cnp.sepa"
 const exchangeReferential = "cnp.referential"
 
 type PolicyPullRequest struct {
@@ -37,7 +37,7 @@ func main() {
 	externalCode   := flag.String("external-code", "",    "Entity external code")
 	product        := flag.String("product",       "",    "Product name")
 	agreement      := flag.String("agreement",     "",    "Agreement external code")
-	iban           := flag.String("iban",          "",    "IBAN validation")
+	argIban           := flag.String("iban",          "",    "IBAN validation")
 
 	username       := flag.String("u",             "",    "Username")
 	authorities    := flag.String("a",             "",    "Authorities (coma separated list)")
@@ -50,8 +50,8 @@ func main() {
 		fmt.Println("Hodei cli ", version)
 		return
 	}
-	if(*iban != "") {
-		sendIbanValdidationMessage(*iban, *verbose)
+	if(*argIban != "") {
+		iban.ProcessIban(*argIban, *verbose)
 		return
 	}
 	if(*pullCountries) {
@@ -75,26 +75,18 @@ func main() {
 	}
 }
 
-func sendIbanValdidationMessage(iban string, verbose bool) {
-	if(verbose) {
-		log.Printf("Validating IBAN %s", iban)
-	}
-	body := `{"countryCode": "ESP","iban": "` + iban + `"}`
-	sendMessage(exchangeSepa, "iban.validation", body, verbose)
-}
-
 func sendPullCountryMessage(verbose bool) {
 	if(verbose) {
 		log.Printf("Pulling countries from referential API")
 	}
-	sendMessage(exchangeReferential, "country.pull", "", verbose)
+	client.SendMessage(exchangeReferential, "country.pull", "", verbose)
 }
 
 func sendPullProductsMessage(verbose bool) {
 	if(verbose) {
 		log.Printf("Pulling products and agreements from referential API")
 	}
-	sendMessage(exchangeReferential, "product.pull", "", verbose)
+	client.SendMessage(exchangeReferential, "product.pull", "", verbose)
 }
 
 func sendPullPoliciesMessage(product string, request PolicyPullRequest, auth Authorization, verbose bool) {
@@ -118,47 +110,8 @@ func sendPullPoliciesMessage(product string, request PolicyPullRequest, auth Aut
 			"App-Username"   : auth.username,
 			"App-Authorities": auth.authorities,
 		}
-		sendMessageWithHeaders("ppi.referential", "policy.pull", body, headers, verbose)
+		client.SendMessageWithHeaders("ppi.referential", "policy.pull", body, headers, verbose)
 	default:
 		log.Fatalf("Unknown product %s", product)
 	}
-}
-
-func sendMessage(exchange string, routingKey string, body string, verbose bool) (err error) {
-	return sendMessageWithHeaders(exchange, routingKey, body, nil, verbose)
-}
-
-func sendMessageWithHeaders(exchange string, routingKey string, body string, headers amqp.Table, verbose bool) (err error) {
-	amqpUri := "amqp://" + os.Getenv("APP_AMQP_URI")
-	conn, err := amqp.Dial(amqpUri)
-	if(err != nil) {
-		log.Fatalf("%s: %s", "Error opening connection", err)
-		return err
-	}
-	defer conn.Close()
-	ch, err := conn.Channel()
-	if(err != nil) {
-		log.Fatalf("%s: %s", "Error opening channel", err)
-		return err
-	}
-	defer ch.Close()
-	if(verbose) {
-		log.Printf("Sending message: %s", body)
-	}
-	err = ch.Publish(
-		exchange,
-		routingKey,
-		false,			// mandatory
-		false,			// inmediate
-		amqp.Publishing {
-			ContentType:	"text/plain",
-			Body:			[]byte(body),
-			Headers:		headers,
-		})
-	if(err != nil) {
-		log.Fatalf("%s: %s", "Error opening connection", err)
-	} else if(verbose) {
-		log.Printf("Sent message")
-	}
-	return err
 }
