@@ -1,4 +1,4 @@
-package iban
+package modules
 
 import (
 	"log"
@@ -7,7 +7,7 @@ import (
 
 const exchangeSepa = "cnp.sepa"
 
-func ProcessIban(iban string, verbose bool) {
+func CheckIban(iban string, verbose bool) {
 	if(verbose) {
 		log.Printf("Validating IBAN %s", iban)
 	}
