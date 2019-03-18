@@ -48,8 +48,8 @@ func main() {
 		modules.PullProducts(*verbose)
 	}
 	if(*pullPerson) {
-		//TODO
-		fmt.Println("Not implemented")
+		auth := modules.Authorization{*username, *authorities}
+		modules.CustomerSearch(*id, auth, *verbose)
 	}
 	if(*pullLegal) {
 		//TODO

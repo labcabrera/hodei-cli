@@ -33,6 +33,7 @@ func SendMessageWithHeaders(exchange string, routingKey string, body string, hea
 		DeliveryMode:	amqp.Persistent,
 		Timestamp:		time.Now(),
 		ContentType:	"text/plain",
+		Headers:		headers,
 		Body:			[]byte(body),
 	}
 
