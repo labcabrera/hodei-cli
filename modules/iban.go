@@ -2,15 +2,20 @@ package modules
 
 import (
 	"log"
+	"github.com/streadway/amqp"
 	"github.com/labcabrera/hodei-cli/client"
 )
 
 const exchangeSepa = "cnp.sepa"
 
-func CheckIban(iban string, verbose bool) {
+func CheckIban(iban string, verbose bool) (res string, err error) {
 	if(verbose) {
 		log.Printf("Validating IBAN %s", iban)
 	}
+	headers := amqp.Table{
+		"App-Source":		"hodei-cli",
+	}
 	body := `{"countryCode": "ESP","iban": "` + iban + `"}`
-	client.SendMessage(exchangeSepa, "iban.validation", body, verbose)
+	res, err = client.SendAndReceive("cnp.sepa", "iban.validation", body, headers, verbose)
+	return
 }

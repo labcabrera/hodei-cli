@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"flag"
 	"log"
+	"time"
+	"math/rand"
 	"github.com/labcabrera/hodei-cli/modules"
 	"github.com/labcabrera/hodei-cli/client"
 )
@@ -12,6 +14,7 @@ const version = "0.2.0-SNAPSHOT"
 const exchangeReferential = "cnp.referential"
 
 func main() {
+	rand.Seed(time.Now().UTC().UnixNano())
 
 	// Arguments
 	pullCountries	:= flag.Bool("pull-countries",	false,	"Pull countries over referential API")
@@ -38,7 +41,12 @@ func main() {
 		return
 	}
 	if(*argIban != "") {
-		modules.CheckIban(*argIban, *verbose)
+		msg, err := modules.CheckIban(*argIban, *verbose)
+		if(err != nil) {
+			log.Fatalf("%s: %s", "IBAN error", err)
+		} else {
+			fmt.Println(msg)
+		}
 		return
 	}
 	if(*pullCountries) {
@@ -49,7 +57,12 @@ func main() {
 	}
 	if(*pullPerson) {
 		auth := modules.Authorization{*username, *authorities}
-		modules.CustomerSearch(*id, "person", auth, *verbose)
+		msg, err := modules.CustomerSearch(*id, "person", auth, *verbose)
+		if(err != nil) {
+			log.Fatalf("%s: %s", "Error reading person", err)
+		} else {
+			fmt.Println(msg)
+		}
 	}
 	if(*pullLegal) {
 		auth := modules.Authorization{*username, *authorities}
