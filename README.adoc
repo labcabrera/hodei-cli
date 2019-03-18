@@ -10,6 +10,7 @@ Para ver las opciones utilizar la opcion `hodei-cli --help`
 
 |===
 |Acción                                       |Comando
+|Obtencion de una persona                     |`hodei-cli -read-person 12345 -u username -a foo`
 |Sincronización de países                     |`hodei-cli -pull-countries`
 |Sincronización de productos y acuerdos marco |`hodei-cli -pull-products`
 |Sincronización de personas                   |`hodei-cli -pull-person $personId`

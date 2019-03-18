@@ -8,14 +8,14 @@ import (
 
 const exchangeSepa = "cnp.sepa"
 
-func CheckIban(iban string, verbose bool) (res string, err error) {
+func CheckIban(country string, iban string, verbose bool) (res string, err error) {
 	if(verbose) {
 		log.Printf("Validating IBAN %s", iban)
 	}
 	headers := amqp.Table{
 		"App-Source":		"hodei-cli",
 	}
-	body := `{"countryCode": "ESP","iban": "` + iban + `"}`
+	body := `{"countryCode": "` + country + `","iban": "` + iban + `"}`
 	res, err = client.SendAndReceive("cnp.sepa", "iban.validation", body, headers, verbose)
 	return
 }
