@@ -2,82 +2,142 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"flag"
-	"log"
 	"time"
 	"math/rand"
 	"github.com/labcabrera/hodei-cli/modules"
-	"github.com/labcabrera/hodei-cli/client"
 )
 
 const version = "0.2.0-SNAPSHOT"
-const exchangeReferential = "cnp.referential"
 
 func main() {
+
+	readPersonCommand			:= flag.NewFlagSet("read-person", flag.ExitOnError)
+	pullCountriesCommand		:= flag.NewFlagSet("pull-countries", flag.ExitOnError)
+	pullProductsCommand			:= flag.NewFlagSet("pull-products", flag.ExitOnError)
+	pullPoliciesCommand			:= flag.NewFlagSet("pull-policies", flag.ExitOnError)
+	checkIbanCommand			:= flag.NewFlagSet("check-iban", flag.ExitOnError)
+
+	readPersonIdPtr				:= readPersonCommand.String(	"id",		"", 	"MongoDB ID (required)")
+	readPersonUsernamePtr		:= readPersonCommand.String(	"u",		"", 	"Username (required)")
+	readPersonAuthoritiesPtr	:= readPersonCommand.String(	"a",		"",		"Authorities (required)")
+	readPersonLegalPtr			:= readPersonCommand.Bool(		"legal",	false,	"Legal entity")
+	readPersonVerbosePtr		:= readPersonCommand.Bool(		"v",		false,	"Verbose")
+	readPersonHelpPtr			:= readPersonCommand.Bool(		"help",		false,	"Help")
+	
+	pullCountriesVerbosePtr		:= pullCountriesCommand.Bool(	"v",		false,	"Verbose")
+	pullCountriesHelpPtr		:= pullCountriesCommand.Bool(	"help",		false,	"Help")
+
+	pullProductsVerbosePtr		:= pullPoliciesCommand.Bool(	"v",		false,	"Verbose")
+	pullProductsHelpPtr			:= pullPoliciesCommand.Bool(	"help",		false,	"Help")
+	
+	pullPoliciesProduct			:= pullProductsCommand.String(	"product",	"",		"Product ID (required)")
+	pullPoliciesUsernamePtr		:= pullProductsCommand.String(	"u",		"",		"Username (required)")
+	pullPoliciesAuthoritiesPtr	:= pullProductsCommand.String(	"a",		"",		"Authorities (required)")
+	pullPoliciesIdPtr			:= pullProductsCommand.String(	"id",		"",		"Policy ID")
+	pullPoliciesExternalCodePtr	:= pullProductsCommand.String(	"code",		"",		"Policy external code")
+	pullPoliciesAgremmentPtr	:= pullProductsCommand.String(	"agreement","",		"Agreement ID")
+	pullPoliciesVerbosePtr		:= pullProductsCommand.Bool(	"v",		false,	"Verbose")
+	pullPoliciesHelpPtr			:= pullProductsCommand.Bool(	"help",		false,	"Help")
+	
+	checkIbanValuePtr			:= checkIbanCommand.String(		"iban",		"", 	"IBAN (required)")
+	checkIbanCountryPtr			:= checkIbanCommand.String(		"c",		"ESP", 	"Country")
+	checkIbanVerbosePtr			:= checkIbanCommand.Bool(		"v",		false,	"Verbose")
+	checkIbanHelpPtr			:= checkIbanCommand.Bool(		"help",		false,	"Help")
+	
+	if len(os.Args) < 2 {
+		usage()
+		return
+	}
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	// Arguments
-	pullCountries	:= flag.Bool("pull-countries",	false,	"Pull countries over referential API")
-	pullProducts	:= flag.Bool("pull-products",	false,	"Pull products and agreements over referential API")
-	pullPolicies	:= flag.Bool("pull-policies",	false,	"Pull policies")
-	pullPerson		:= flag.Bool("pull-person",		false,	"Pull person from referential API")
-	pullLegal		:= flag.Bool("pull-legal",		false,	"Pull legal entity from referential API")
-
-	id				:= flag.String("id",			"",		"Entity MongoDB identifier")
-	externalCode	:= flag.String("external-code",	"",		"Entity external code")
-	product			:= flag.String("product",		"",		"Product name")
-	agreement		:= flag.String("agreement",		"",		"Agreement external code")
-	argIban			:= flag.String("iban",			"",		"IBAN validation")
-
-	username		:= flag.String("u",				"",		"Username")
-	authorities		:= flag.String("a",				"",		"Authorities (coma separated list)")
-	verbose			:= flag.Bool("v",				false,	"Verbose")
-	printVersion	:= flag.Bool("version",			false,	"Print version")
+	switch os.Args[1] {
+	case "version":
+		fmt.Println("Hodei cli", version)
+		os.Exit(0)
+	case "read-person":
+		readPersonCommand.Parse(os.Args[2:])
+	case "check-iban":
+		checkIbanCommand.Parse(os.Args[2:])
+	case "pull-countries":
+		pullCountriesCommand.Parse(os.Args[2:])
+	case "pull-products":
+		pullProductsCommand.Parse(os.Args[2:])
+	case "pull-policies":
+		pullPoliciesCommand.Parse(os.Args[2:])
+	default:
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
 	
-	flag.Parse()
+	if readPersonCommand.Parsed() {
+		if *readPersonHelpPtr {
+			readPersonCommand.PrintDefaults()
+			os.Exit(0)
+		} else if *readPersonIdPtr == "" || *readPersonUsernamePtr == "" || *readPersonAuthoritiesPtr == "" {
+			readPersonCommand.PrintDefaults()
+			os.Exit(1)
+		}
+		modules.CustomerSearch(
+			*readPersonIdPtr,
+			*readPersonLegalPtr,
+			*readPersonUsernamePtr,
+			*readPersonAuthoritiesPtr,
+			*readPersonVerbosePtr)
+	}
+
+	if pullCountriesCommand.Parsed() {
+		if *pullCountriesHelpPtr {
+			pullCountriesCommand.PrintDefaults()
+			os.Exit(0)
+		}
+		modules.PullCountries(*pullCountriesVerbosePtr)
+	}
+
+	if pullProductsCommand.Parsed() {
+		if *pullProductsHelpPtr {
+			pullProductsCommand.PrintDefaults()
+			os.Exit(0)
+		}
+		modules.PullProducts(*pullProductsVerbosePtr)
+	}
 	
-	if(*printVersion) {
-		fmt.Println("Hodei cli ", version)
-		return
-	}
-	if(*argIban != "") {
-		msg, err := modules.CheckIban(*argIban, *verbose)
-		if(err != nil) {
-			log.Fatalf("%s: %s", "IBAN error", err)
-		} else {
-			fmt.Println(msg)
+	if pullPoliciesCommand.Parsed() {
+		if *pullPoliciesHelpPtr {
+			pullPoliciesCommand.PrintDefaults()
+			os.Exit(0)
+		} else if *pullPoliciesProduct == "" || *pullPoliciesUsernamePtr == "" || *pullPoliciesAuthoritiesPtr == "" {
+			pullPoliciesCommand.PrintDefaults()
+			os.Exit(1)
 		}
-		return
+		request := modules.PolicyPullRequest{*pullPoliciesIdPtr, *pullPoliciesExternalCodePtr, *pullPoliciesAgremmentPtr}
+		auth := modules.Authorization{*pullPoliciesUsernamePtr, *pullPoliciesAuthoritiesPtr}
+		modules.PullPolicies(*pullPoliciesProduct, request, auth, *pullPoliciesVerbosePtr)
 	}
-	if(*pullCountries) {
-		modules.PullCountries(*verbose)
-	}
-	if(*pullProducts) {
-		modules.PullProducts(*verbose)
-	}
-	if(*pullPerson) {
-		auth := modules.Authorization{*username, *authorities}
-		msg, err := modules.CustomerSearch(*id, "person", auth, *verbose)
-		if(err != nil) {
-			log.Fatalf("%s: %s", "Error reading person", err)
-		} else {
-			fmt.Println(msg)
+
+	if checkIbanCommand.Parsed() {
+		if *checkIbanHelpPtr {
+			checkIbanCommand.PrintDefaults()
+			os.Exit(0)
+		} else if *checkIbanValuePtr == "" {
+			checkIbanCommand.PrintDefaults()
+			os.Exit(1)
 		}
+		modules.CheckIban(*checkIbanCountryPtr, *checkIbanValuePtr, *checkIbanVerbosePtr)
 	}
-	if(*pullLegal) {
-		auth := modules.Authorization{*username, *authorities}
-		modules.CustomerSearch(*id, "legal", auth, *verbose)
-	}
-	if(*pullPolicies) {
-		request := modules.PolicyPullRequest{*id, *externalCode, *agreement}
-		auth := modules.Authorization{*username, *authorities}
-		modules.PullPolicies(*product, request, auth, *verbose)
-	}
+
+func usage() {
+	fmt.Println(`
+Usage: hodei-cli COMMAND [OPTIONS]")
+
+Commands:
+  read-person
+  pull-countries
+  pull-products
+  pull-policies
+  check-iban
+  version
+`)
 }
 
-func sendPullCountryMessage(verbose bool) {
-	if(verbose) {
-		log.Printf("Pulling countries from referential API")
-	}
-	client.SendMessage(exchangeReferential, "country.pull", "", verbose)
-}

@@ -2,20 +2,41 @@ package modules
 
 import (
 	"log"
+	"flag"
+	"os"
 	"github.com/streadway/amqp"
 	"github.com/labcabrera/hodei-cli/client"
 )
 
-func CustomerSearch(id string, customerType string, auth Authorization, verbose bool) (res string, err error) {
-	if(verbose) {
-		log.Printf("Searching customer %s (%s)", id, auth)
+func CustomerSearch(id string, legal bool, username string, authorities string, verbose bool) (res string, err error) {
+	if verbose {
+		log.Printf("Searching customer %s (%s:%s)", id, username, authorities)
 	}
+	if id == "" {
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
+	personType := "person"
+	if legal {
+		personType = "legal"
+	}
+
 	headers := amqp.Table{
-		"App-Username"   : auth.Username,
-		"App-Authorities": auth.Authorities,
+		"App-Username"   : username,
+		"App-Authorities": authorities,
 	}
-	body := `{"` + id + `":{"type":"` + customerType + `","reference":"` + id + `"}}`
+	body := `{"1":{"type":"` + personType + `","reference":"` + id + `"}}`
+
+	if(verbose) {
+		log.Printf("Body: %s", body)
+	}
+
 	res, err = client.SendAndReceive("cnp.customer", "customer.search", body, headers, verbose)
+	if(err != nil) {
+		log.Fatalf("%s: %s", "Error reading person", err)
+		return
+	}
+	
 	return
 }
 
