@@ -2,55 +2,35 @@
 
 == Introducción
 
-Herramienta para simplificar diferentes procesos de Hodei.
-
-Para ver las opciones utilizar la opcion `hodei-cli --help`
+Utilidad para ejecutar procesos de Hodei que se comunica con los microservicios de la plataforma a
+través de RabbitMQ.
 
 == Comandos
 
 |===
-|Acción                                       |Comando
-|Obtencion de una persona                     |`hodei-cli -read-person 12345 -u username -a foo`
-|Sincronización de países                     |`hodei-cli -pull-countries`
-|Sincronización de productos y acuerdos marco |`hodei-cli -pull-products`
-|Sincronización de personas                   |`hodei-cli -pull-person $personId`
-|Sincronización de entidades legales          |`hodei-cli -pull-legal $legalEntityId`
-|Sincronización de pólizas                    |`hodei-cli -pull-policies -product $productId -policyId $policyId`
-|Validacion de IBAN                           |`hodei-cli -iban 1234567890`
+|`read-person`            |Recupera el JSON de una determinada persona de MongoDB a partir del identificador.
+|`pull-countries`         |Envía un mensaje de sincronización de países.
+|`pull-products`          |Envía un mensaje de sincronización de productos y acuerdos marco.
+|`pull-policies`          |Envía un mensaje de sincronización de pólizas.
+|`check-iban`             |Envía un mensaje para la validación de un determinado IBAN.
 |===
 
-=== Sincronización de pólizas
+Para consultar las opciones de cada operativa basta con pasar el argumento `-help` al comando que deseamos ejecutar.
 
-Sincronización de una póliza a partir de su identificador de MongoDB:
+== Configuración
 
-----
-hodei-cli -pull-policies -product ppi -id 12345 -u cnp -a cnp
-----
-
-Sincronización de todas las pólizas de un acuerdo marco:
-
-----
-hodei-cli-linux-amd64 -pull-policies -product ppi -agreement 731 -u cnp -a cnp
-----
-
-== Instalación y ejecución
-
-En primer lugar deberemos definir la variable de sistema `APP_AMQP_URI` que utilizaremos para abrir
-la conexión con RabbitMQ:
+Eta utilidad requiere de la variable de sistema `APP_AMQP_URI` para establecer la conexión con
+Rabbit. El formato esperado es el siguiente:
 
 ----
 APP_AMQP_URI=guest:guest@localhost:5672/
 ----
 
-Para obtener las dependencias de _amqp_ ejecutaremos el comando:
+
+== Instalación
 
 ----
 go get github.com/streadway/amqp
-----
-
-Finalmente podremos hacer la construcción a partir del plugin de gradle:
-
-----
 ./gradlew goClean goBuild
 ----
 
@@ -58,5 +38,5 @@ La construcción generá el binario dependiente de la plataforma en la carpeta _
 podremos ejecutar:
 
 ----
-.gogradle/hodei-cli-linux-amd64 -help
+.gogradle/hodei-cli-linux-amd64
 ----

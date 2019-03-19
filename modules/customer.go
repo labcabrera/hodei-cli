@@ -8,7 +8,7 @@ import (
 	"github.com/labcabrera/hodei-cli/client"
 )
 
-func CustomerSearch(id string, username string, authorities string, verbose bool) (res string, err error) {
+func CustomerSearch(id string, legal bool, username string, authorities string, verbose bool) (res string, err error) {
 	if verbose {
 		log.Printf("Searching customer %s (%s:%s)", id, username, authorities)
 	}
@@ -16,13 +16,16 @@ func CustomerSearch(id string, username string, authorities string, verbose bool
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
-
+	personType := "person"
+	if legal {
+		personType = "legal"
+	}
 
 	headers := amqp.Table{
 		"App-Username"   : username,
 		"App-Authorities": authorities,
 	}
-	body := `{"1":{"type":"person","reference":"` + id + `"}}`
+	body := `{"1":{"type":"` + personType + `","reference":"` + id + `"}}`
 
 	if(verbose) {
 		log.Printf("Body: %s", body)
