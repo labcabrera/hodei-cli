@@ -9,7 +9,7 @@ import (
 	"github.com/labcabrera/hodei-cli/modules"
 )
 
-const version = "0.2.0-SNAPSHOT"
+const version = "0.2.0"
 
 func main() {
 
@@ -126,6 +126,7 @@ func main() {
 		}
 		modules.CheckIban(*checkIbanCountryPtr, *checkIbanValuePtr, *checkIbanVerbosePtr)
 	}
+}
 
 func usage() {
 	fmt.Println(`
