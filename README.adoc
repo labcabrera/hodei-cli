@@ -34,9 +34,9 @@ go get github.com/streadway/amqp
 ./gradlew goClean goBuild
 ----
 
-La construcción generá el binario dependiente de la plataforma en la carpeta _./.gogradle/_ que 
+La construcción generá el binario dependiente de la plataforma en la carpeta _%{GOPATH}/bin_ que 
 podremos ejecutar:
 
 ----
-.gogradle/hodei-cli-linux-amd64
+hodei-cli version
 ----
