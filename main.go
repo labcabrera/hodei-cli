@@ -1,11 +1,12 @@
 package main
 
 import (
-	"fmt"
-	"os"
 	"flag"
-	"time"
+	"fmt"
 	"math/rand"
+	"os"
+	"time"
+
 	"github.com/labcabrera/hodei-cli/modules"
 )
 
@@ -13,39 +14,39 @@ const version = "0.3.0-SNAPSHOT"
 
 func main() {
 
-	readPersonCommand			:= flag.NewFlagSet("read-person", flag.ExitOnError)
-	pullCountriesCommand		:= flag.NewFlagSet("pull-countries", flag.ExitOnError)
-	pullProductsCommand			:= flag.NewFlagSet("pull-products", flag.ExitOnError)
-	pullPoliciesCommand			:= flag.NewFlagSet("pull-policies", flag.ExitOnError)
-	checkIbanCommand			:= flag.NewFlagSet("check-iban", flag.ExitOnError)
+	readPersonCommand := flag.NewFlagSet("read-person", flag.ExitOnError)
+	pullCountriesCommand := flag.NewFlagSet("pull-countries", flag.ExitOnError)
+	pullProductsCommand := flag.NewFlagSet("pull-products", flag.ExitOnError)
+	pullPoliciesCommand := flag.NewFlagSet("pull-policies", flag.ExitOnError)
+	checkIbanCommand := flag.NewFlagSet("check-iban", flag.ExitOnError)
 
-	readPersonIdPtr				:= readPersonCommand.String(	"id",		"", 	"MongoDB ID (required)")
-	readPersonUsernamePtr		:= readPersonCommand.String(	"u",		"", 	"Username (required)")
-	readPersonAuthoritiesPtr	:= readPersonCommand.String(	"a",		"",		"Authorities (required)")
-	readPersonLegalPtr			:= readPersonCommand.Bool(		"legal",	false,	"Legal entity")
-	readPersonVerbosePtr		:= readPersonCommand.Bool(		"v",		false,	"Verbose")
-	readPersonHelpPtr			:= readPersonCommand.Bool(		"help",		false,	"Help")
-	
-	pullCountriesVerbosePtr		:= pullCountriesCommand.Bool(	"v",		false,	"Verbose")
-	pullCountriesHelpPtr		:= pullCountriesCommand.Bool(	"help",		false,	"Help")
+	readPersonIdPtr := readPersonCommand.String("id", "", "MongoDB ID (required)")
+	readPersonUsernamePtr := readPersonCommand.String("u", "", "Username (required)")
+	readPersonAuthoritiesPtr := readPersonCommand.String("a", "", "Authorities (required)")
+	readPersonLegalPtr := readPersonCommand.Bool("legal", false, "Legal entity")
+	readPersonVerbosePtr := readPersonCommand.Bool("v", false, "Verbose")
+	readPersonHelpPtr := readPersonCommand.Bool("help", false, "Help")
 
-	pullProductsVerbosePtr		:= pullPoliciesCommand.Bool(	"v",		false,	"Verbose")
-	pullProductsHelpPtr			:= pullPoliciesCommand.Bool(	"help",		false,	"Help")
-	
-	pullPoliciesProduct			:= pullProductsCommand.String(	"product",	"",		"Product ID (required)")
-	pullPoliciesUsernamePtr		:= pullProductsCommand.String(	"u",		"",		"Username (required)")
-	pullPoliciesAuthoritiesPtr	:= pullProductsCommand.String(	"a",		"",		"Authorities (required)")
-	pullPoliciesIdPtr			:= pullProductsCommand.String(	"id",		"",		"Policy ID")
-	pullPoliciesExternalCodePtr	:= pullProductsCommand.String(	"code",		"",		"Policy external code")
-	pullPoliciesAgremmentPtr	:= pullProductsCommand.String(	"agreement","",		"Agreement ID")
-	pullPoliciesVerbosePtr		:= pullProductsCommand.Bool(	"v",		false,	"Verbose")
-	pullPoliciesHelpPtr			:= pullProductsCommand.Bool(	"help",		false,	"Help")
-	
-	checkIbanValuePtr			:= checkIbanCommand.String(		"iban",		"", 	"IBAN (required)")
-	checkIbanCountryPtr			:= checkIbanCommand.String(		"c",		"ESP", 	"Country")
-	checkIbanVerbosePtr			:= checkIbanCommand.Bool(		"v",		false,	"Verbose")
-	checkIbanHelpPtr			:= checkIbanCommand.Bool(		"help",		false,	"Help")
-	
+	pullCountriesVerbosePtr := pullCountriesCommand.Bool("v", false, "Verbose")
+	pullCountriesHelpPtr := pullCountriesCommand.Bool("help", false, "Help")
+
+	pullProductsVerbosePtr := pullPoliciesCommand.Bool("v", false, "Verbose")
+	pullProductsHelpPtr := pullPoliciesCommand.Bool("help", false, "Help")
+
+	pullPoliciesProduct := pullProductsCommand.String("product", "", "Product ID (required)")
+	pullPoliciesUsernamePtr := pullProductsCommand.String("u", "", "Username (required)")
+	pullPoliciesAuthoritiesPtr := pullProductsCommand.String("a", "", "Authorities (required)")
+	pullPoliciesIdPtr := pullProductsCommand.String("id", "", "Policy ID")
+	pullPoliciesExternalCodePtr := pullProductsCommand.String("code", "", "Policy external code")
+	pullPoliciesAgremmentPtr := pullProductsCommand.String("agreement", "", "Agreement ID")
+	pullPoliciesVerbosePtr := pullProductsCommand.Bool("v", false, "Verbose")
+	pullPoliciesHelpPtr := pullProductsCommand.Bool("help", false, "Help")
+
+	checkIbanValuePtr := checkIbanCommand.String("iban", "", "IBAN (required)")
+	checkIbanCountryPtr := checkIbanCommand.String("c", "ESP", "Country")
+	checkIbanVerbosePtr := checkIbanCommand.Bool("v", false, "Verbose")
+	checkIbanHelpPtr := checkIbanCommand.Bool("help", false, "Help")
+
 	if len(os.Args) < 2 {
 		usage()
 		return
@@ -70,7 +71,7 @@ func main() {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
-	
+
 	if readPersonCommand.Parsed() {
 		if *readPersonHelpPtr {
 			readPersonCommand.PrintDefaults()
@@ -102,7 +103,7 @@ func main() {
 		}
 		modules.PullProducts(*pullProductsVerbosePtr)
 	}
-	
+
 	if pullPoliciesCommand.Parsed() {
 		if *pullPoliciesHelpPtr {
 			pullPoliciesCommand.PrintDefaults()
@@ -111,8 +112,13 @@ func main() {
 			pullPoliciesCommand.PrintDefaults()
 			os.Exit(1)
 		}
-		request := modules.PolicyPullRequest{*pullPoliciesIdPtr, *pullPoliciesExternalCodePtr, *pullPoliciesAgremmentPtr}
-		auth := modules.Authorization{*pullPoliciesUsernamePtr, *pullPoliciesAuthoritiesPtr}
+		request := modules.PolicyPullRequest{
+			EntityId:     *pullPoliciesIdPtr,
+			ExternalCode: *pullPoliciesExternalCodePtr,
+			AgreementId:  *pullPoliciesAgremmentPtr}
+		auth := modules.Authorization{
+			Username:    *pullPoliciesUsernamePtr,
+			Authorities: *pullPoliciesAuthoritiesPtr}
 		modules.PullPolicies(*pullPoliciesProduct, request, auth, *pullPoliciesVerbosePtr)
 	}
 
@@ -138,7 +144,5 @@ Commands:
   pull-products
   pull-policies
   check-iban
-  version
-`)
+  version`)
 }
-
