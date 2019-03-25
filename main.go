@@ -17,6 +17,7 @@ func main() {
 	readPersonCommand := flag.NewFlagSet("read-person", flag.ExitOnError)
 	pullCountriesCommand := flag.NewFlagSet("pull-countries", flag.ExitOnError)
 	pullProductsCommand := flag.NewFlagSet("pull-products", flag.ExitOnError)
+	pullAgreementsCommand := flag.NewFlagSet("pull-agreements", flag.ExitOnError)
 	pullPoliciesCommand := flag.NewFlagSet("pull-policies", flag.ExitOnError)
 	checkIbanCommand := flag.NewFlagSet("check-iban", flag.ExitOnError)
 
@@ -32,6 +33,10 @@ func main() {
 
 	pullProductsVerbosePtr := pullPoliciesCommand.Bool("v", false, "Verbose")
 	pullProductsHelpPtr := pullPoliciesCommand.Bool("help", false, "Help")
+
+	pullAgreementsProductPtr := pullAgreementsCommand.String("product", "", "Product ID")
+	pullAgreementsVerbosePtr := pullAgreementsCommand.Bool("v", false, "Verbose")
+	pullAgreementsHelpPtr := pullAgreementsCommand.Bool("help", false, "Help")
 
 	pullPoliciesProduct := pullProductsCommand.String("product", "", "Product ID (required)")
 	pullPoliciesUsernamePtr := pullProductsCommand.String("u", "", "Username (required)")
@@ -65,6 +70,8 @@ func main() {
 		pullCountriesCommand.Parse(os.Args[2:])
 	case "pull-products":
 		pullProductsCommand.Parse(os.Args[2:])
+	case "pull-agreements":
+		pullAgreementsCommand.Parse(os.Args[2:])
 	case "pull-policies":
 		pullPoliciesCommand.Parse(os.Args[2:])
 	default:
@@ -102,6 +109,14 @@ func main() {
 			os.Exit(0)
 		}
 		modules.PullProducts(*pullProductsVerbosePtr)
+	}
+
+	if pullAgreementsCommand.Parsed() {
+		if *pullAgreementsHelpPtr {
+			pullAgreementsCommand.PrintDefaults()
+			os.Exit(0)
+		}
+		modules.PullAgreements(*pullAgreementsProductPtr, *pullAgreementsVerbosePtr)
 	}
 
 	if pullPoliciesCommand.Parsed() {
@@ -142,6 +157,7 @@ Commands:
   read-person
   pull-countries
   pull-products
+  pull-agreements
   pull-policies
   check-iban
   version`)

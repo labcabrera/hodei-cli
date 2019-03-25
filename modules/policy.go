@@ -1,26 +1,27 @@
 package modules
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
-	"encoding/json"
-	"github.com/streadway/amqp"
+
 	"github.com/labcabrera/hodei-cli/client"
+	"github.com/streadway/amqp"
 )
 
 type PolicyPullRequest struct {
-	EntityId			string
-	ExternalCode		string
-	AgreementId			string
+	EntityId     string
+	ExternalCode string
+	AgreementId  string
 }
 
 type Authorization struct {
-	Username			string
-	Authorities			string
+	Username    string
+	Authorities string
 }
 
 func PullPolicies(product string, request PolicyPullRequest, auth Authorization, verbose bool) {
-	switch(product) {
+	switch product {
 	case "":
 		fmt.Println("Required argument product")
 		return
@@ -28,16 +29,16 @@ func PullPolicies(product string, request PolicyPullRequest, auth Authorization,
 		log.Printf("Agreement: %s", request.AgreementId)
 
 		bodyBinary, err := json.Marshal(request)
-		if(err != nil) {
+		if err != nil {
 			log.Fatalf("%s: %s", "Error marshalling request", err)
 			return
 		}
 		body := string(bodyBinary)
 
 		//TODO
-		body = `{"agreementId":"` + request.AgreementId + `"}`		
+		body = `{"agreementId":"` + request.AgreementId + `"}`
 		headers := amqp.Table{
-			"App-Username"   : auth.Username,
+			"App-Username":    auth.Username,
 			"App-Authorities": auth.Authorities,
 		}
 		client.SendMessageWithHeaders("ppi.referential", "policy.pull", body, headers, verbose)
@@ -45,4 +46,3 @@ func PullPolicies(product string, request PolicyPullRequest, auth Authorization,
 		log.Fatalf("Unknown product %s", product)
 	}
 }
-
