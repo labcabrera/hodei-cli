@@ -10,7 +10,7 @@ import (
 	"github.com/labcabrera/hodei-cli/modules"
 )
 
-const version = "0.3.0-SNAPSHOT"
+const version = "0.3.0"
 const versionCmd = "version"
 
 func main() {
