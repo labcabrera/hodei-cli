@@ -15,12 +15,7 @@ type PolicyPullRequest struct {
 	AgreementId  string
 }
 
-type Authorization struct {
-	Username    string
-	Authorities string
-}
-
-func PullPolicies(product string, request PolicyPullRequest, auth Authorization, verbose bool) {
+func PullPolicies(product string, request PolicyPullRequest, auth client.Authorization, verbose bool) {
 	switch product {
 	case "":
 		fmt.Println("Required argument product")

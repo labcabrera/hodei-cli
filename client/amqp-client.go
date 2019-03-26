@@ -9,6 +9,11 @@ import (
 	"github.com/streadway/amqp"
 )
 
+type Authorization struct {
+	Username    string
+	Authorities string
+}
+
 func SendMessage(exchange string, routingKey string, body string, verbose bool) (err error) {
 	return SendMessageWithHeaders(exchange, routingKey, body, nil, verbose)
 }

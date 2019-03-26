@@ -7,17 +7,18 @@ import (
 	"os"
 	"time"
 
+	"github.com/labcabrera/hodei-cli/client"
 	"github.com/labcabrera/hodei-cli/modules"
 )
 
 const version = "0.3.0-SNAPSHOT"
 
 func main() {
-
 	readPersonCommand := flag.NewFlagSet("read-person", flag.ExitOnError)
 	pullCountriesCommand := flag.NewFlagSet("pull-countries", flag.ExitOnError)
 	pullProductsCommand := flag.NewFlagSet("pull-products", flag.ExitOnError)
 	pullAgreementsCommand := flag.NewFlagSet("pull-agreements", flag.ExitOnError)
+	pullProfessionsCommand := flag.NewFlagSet("pull-professions", flag.ExitOnError)
 	pullPoliciesCommand := flag.NewFlagSet("pull-policies", flag.ExitOnError)
 	checkIbanCommand := flag.NewFlagSet("check-iban", flag.ExitOnError)
 
@@ -38,6 +39,9 @@ func main() {
 	pullAgreementsVerbosePtr := pullAgreementsCommand.Bool("v", false, "Verbose")
 	pullAgreementsHelpPtr := pullAgreementsCommand.Bool("help", false, "Help")
 
+	pullProfessionsVerbosePtr := pullProfessionsCommand.Bool("v", false, "Verbose")
+	pullProfessionsHelpPtr := pullProfessionsCommand.Bool("help", false, "Help")
+
 	pullPoliciesProduct := pullProductsCommand.String("product", "", "Product ID (required)")
 	pullPoliciesUsernamePtr := pullProductsCommand.String("u", "", "Username (required)")
 	pullPoliciesAuthoritiesPtr := pullProductsCommand.String("a", "", "Authorities (required)")
@@ -51,6 +55,9 @@ func main() {
 	checkIbanCountryPtr := checkIbanCommand.String("c", "ESP", "Country")
 	checkIbanVerbosePtr := checkIbanCommand.Bool("v", false, "Verbose")
 	checkIbanHelpPtr := checkIbanCommand.Bool("help", false, "Help")
+
+	pullNetworkOptions := modules.PullNetworkOptions{}
+	pullNetworkFlagSet := modules.NetworkFlagset(&pullNetworkOptions)
 
 	if len(os.Args) < 2 {
 		usage()
@@ -72,6 +79,10 @@ func main() {
 		pullProductsCommand.Parse(os.Args[2:])
 	case "pull-agreements":
 		pullAgreementsCommand.Parse(os.Args[2:])
+	case "pull-networks":
+		pullNetworkFlagSet.Parse(os.Args[2:])
+	case "pull-professions":
+		pullProfessionsCommand.Parse(os.Args[2:])
 	case "pull-policies":
 		pullPoliciesCommand.Parse(os.Args[2:])
 	default:
@@ -119,6 +130,22 @@ func main() {
 		modules.PullAgreements(*pullAgreementsProductPtr, *pullAgreementsVerbosePtr)
 	}
 
+	if pullNetworkFlagSet.Parsed() {
+		if pullNetworkOptions.Help {
+			pullNetworkFlagSet.PrintDefaults()
+			os.Exit(0)
+		}
+		modules.PullNetworks(&pullNetworkOptions)
+	}
+
+	if pullProfessionsCommand.Parsed() {
+		if *pullProfessionsHelpPtr {
+			pullProfessionsCommand.PrintDefaults()
+			os.Exit(0)
+		}
+		modules.PullProfessions(*pullProfessionsVerbosePtr)
+	}
+
 	if pullPoliciesCommand.Parsed() {
 		if *pullPoliciesHelpPtr {
 			pullPoliciesCommand.PrintDefaults()
@@ -131,7 +158,7 @@ func main() {
 			EntityId:     *pullPoliciesIdPtr,
 			ExternalCode: *pullPoliciesExternalCodePtr,
 			AgreementId:  *pullPoliciesAgremmentPtr}
-		auth := modules.Authorization{
+		auth := client.Authorization{
 			Username:    *pullPoliciesUsernamePtr,
 			Authorities: *pullPoliciesAuthoritiesPtr}
 		modules.PullPolicies(*pullPoliciesProduct, request, auth, *pullPoliciesVerbosePtr)
@@ -158,7 +185,9 @@ Commands:
   pull-countries
   pull-products
   pull-agreements
+  pull-networks
   pull-policies
+  pull-professions
   check-iban
   version`)
 }
