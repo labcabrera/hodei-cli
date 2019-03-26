@@ -134,6 +134,14 @@ func main() {
 		modules.PullProfessions(&pullProfessionsOptions)
 	}
 
+	if pullPoliciesFlagSet.Parsed() {
+		if pullPoliciesOptions.Help {
+			pullPoliciesFlagSet.PrintDefaults()
+			os.Exit(0)
+		}
+		modules.PullPolicies(&pullPoliciesOptions)
+	}
+
 	if checkIbanFlagSet.Parsed() {
 		if checkIbanOptions.Help {
 			checkIbanFlagSet.PrintDefaults()
