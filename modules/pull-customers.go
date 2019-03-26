@@ -10,6 +10,8 @@ import (
 	"github.com/streadway/amqp"
 )
 
+const PullCustomersCmd = "pull-customers"
+
 type PullCustomerOptions struct {
 	Id           string
 	ExternalCode string
@@ -41,7 +43,7 @@ func PullCustomers(options *PullCustomerOptions) {
 }
 
 func PullCustomersFlagSet(options *PullCustomerOptions) *flag.FlagSet {
-	fs := flag.NewFlagSet("pull-customers", flag.ExitOnError)
+	fs := flag.NewFlagSet(PullCustomersCmd, flag.ExitOnError)
 	fs.StringVar(&options.Id, "id", "", "Entity identifier")
 	fs.StringVar(&options.ExternalCode, "externalcode", "", "Entity external code")
 	fs.StringVar(&options.IdCard, "idcard", "", "Entity IdCard")
@@ -50,36 +52,4 @@ func PullCustomersFlagSet(options *PullCustomerOptions) *flag.FlagSet {
 	fs.BoolVar(&options.Verbose, "v", false, "Verbose")
 	fs.BoolVar(&options.Help, "help", false, "Help")
 	return fs
-}
-
-func CustomerSearch(id string, legal bool, username string, authorities string, verbose bool) (res string, err error) {
-	if verbose {
-		log.Printf("Searching customer %s (%s:%s)", id, username, authorities)
-	}
-	if id == "" {
-		flag.PrintDefaults()
-		os.Exit(1)
-	}
-	personType := "person"
-	if legal {
-		personType = "legal"
-	}
-
-	headers := amqp.Table{
-		"App-Username":    username,
-		"App-Authorities": authorities,
-	}
-	body := `{"1":{"type":"` + personType + `","reference":"` + id + `"}}`
-
-	if verbose {
-		log.Printf("Body: %s", body)
-	}
-
-	res, err = client.SendAndReceive("cnp.customer", "customer.search", body, headers, verbose)
-	if err != nil {
-		log.Fatalf("%s: %s", "Error reading person", err)
-		return
-	}
-
-	return
 }

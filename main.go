@@ -7,142 +7,115 @@ import (
 	"os"
 	"time"
 
-	"github.com/labcabrera/hodei-cli/client"
 	"github.com/labcabrera/hodei-cli/modules"
 )
 
 const version = "0.3.0-SNAPSHOT"
+const versionCmd = "version"
 
 func main() {
-	readPersonCommand := flag.NewFlagSet("read-person", flag.ExitOnError)
-	pullCountriesCommand := flag.NewFlagSet("pull-countries", flag.ExitOnError)
-	pullProductsCommand := flag.NewFlagSet("pull-products", flag.ExitOnError)
-	pullAgreementsCommand := flag.NewFlagSet("pull-agreements", flag.ExitOnError)
-	pullProfessionsCommand := flag.NewFlagSet("pull-professions", flag.ExitOnError)
-	pullPoliciesCommand := flag.NewFlagSet("pull-policies", flag.ExitOnError)
-	checkIbanCommand := flag.NewFlagSet("check-iban", flag.ExitOnError)
 
-	readPersonIdPtr := readPersonCommand.String("id", "", "MongoDB ID (required)")
-	readPersonUsernamePtr := readPersonCommand.String("u", "", "Username (required)")
-	readPersonAuthoritiesPtr := readPersonCommand.String("a", "", "Authorities (required)")
-	readPersonLegalPtr := readPersonCommand.Bool("legal", false, "Legal entity")
-	readPersonVerbosePtr := readPersonCommand.Bool("v", false, "Verbose")
-	readPersonHelpPtr := readPersonCommand.Bool("help", false, "Help")
-
-	pullCountriesVerbosePtr := pullCountriesCommand.Bool("v", false, "Verbose")
-	pullCountriesHelpPtr := pullCountriesCommand.Bool("help", false, "Help")
-
-	pullProductsVerbosePtr := pullPoliciesCommand.Bool("v", false, "Verbose")
-	pullProductsHelpPtr := pullPoliciesCommand.Bool("help", false, "Help")
-
-	pullAgreementsProductPtr := pullAgreementsCommand.String("product", "", "Product ID")
-	pullAgreementsVerbosePtr := pullAgreementsCommand.Bool("v", false, "Verbose")
-	pullAgreementsHelpPtr := pullAgreementsCommand.Bool("help", false, "Help")
-
-	pullProfessionsVerbosePtr := pullProfessionsCommand.Bool("v", false, "Verbose")
-	pullProfessionsHelpPtr := pullProfessionsCommand.Bool("help", false, "Help")
-
-	pullPoliciesProduct := pullProductsCommand.String("product", "", "Product ID (required)")
-	pullPoliciesUsernamePtr := pullProductsCommand.String("u", "", "Username (required)")
-	pullPoliciesAuthoritiesPtr := pullProductsCommand.String("a", "", "Authorities (required)")
-	pullPoliciesIdPtr := pullProductsCommand.String("id", "", "Policy ID")
-	pullPoliciesExternalCodePtr := pullProductsCommand.String("code", "", "Policy external code")
-	pullPoliciesAgremmentPtr := pullProductsCommand.String("agreement", "", "Agreement ID")
-	pullPoliciesVerbosePtr := pullProductsCommand.Bool("v", false, "Verbose")
-	pullPoliciesHelpPtr := pullProductsCommand.Bool("help", false, "Help")
-
-	checkIbanValuePtr := checkIbanCommand.String("iban", "", "IBAN (required)")
-	checkIbanCountryPtr := checkIbanCommand.String("c", "ESP", "Country")
-	checkIbanVerbosePtr := checkIbanCommand.Bool("v", false, "Verbose")
-	checkIbanHelpPtr := checkIbanCommand.Bool("help", false, "Help")
-
-	pullNetworkOptions := modules.PullNetworkOptions{}
-	pullNetworkFlagSet := modules.PullNetworkFlagSet(&pullNetworkOptions)
-
-	pullCustomersOptions := modules.PullCustomerOptions{}
-	pullCustomersFlagSet := modules.PullCustomersFlagSet(&pullCustomersOptions)
-
-	//pullCustomersOptions := modules.PullCustomersOptions{}
-
+	// Check command argument
 	if len(os.Args) < 2 {
 		usage()
 		return
 	}
+
+	// Parse cmd options
+	customerSearchOptions := modules.CustomerSearchOptions{}
+	customerSearchFlagSet := modules.CustomerSearchFlagSet(&customerSearchOptions)
+
+	pullCountriesOptions := modules.PullCountriesOptions{}
+	pullCountriesFlagSet := modules.PullCountriesFlagSet(&pullCountriesOptions)
+
+	pullProductsOptions := modules.PullProductsOptions{}
+	pullProductsFlagSet := modules.PullProductsFlagSet(&pullProductsOptions)
+
+	pullAgreementsOptions := modules.PullAgreementsOptions{}
+	pullAgreementsFlagSet := modules.PullAgreementsFlagSet(&pullAgreementsOptions)
+
+	pullNetworksOptions := modules.PullNetworksOptions{}
+	pullNetworksFlagSet := modules.PullNetworksFlagSet(&pullNetworksOptions)
+
+	pullCustomersOptions := modules.PullCustomerOptions{}
+	pullCustomersFlagSet := modules.PullCustomersFlagSet(&pullCustomersOptions)
+
+	pullProfessionsOptions := modules.PullProfessionsOptions{}
+	pullProfessionsFlagSet := modules.PullProfessionsFlagSet(&pullProfessionsOptions)
+
+	pullPoliciesOptions := modules.PullPoliciesOptions{}
+	pullPoliciesFlagSet := modules.PullPoliciesFlagSet(&pullPoliciesOptions)
+
+	checkIbanOptions := modules.CheckIbanOptions{}
+	checkIbanFlagSet := modules.CheckIbanFlagSet(&checkIbanOptions)
+
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	switch os.Args[1] {
-	case "version":
+	case versionCmd:
 		fmt.Println("Hodei cli", version)
 		os.Exit(0)
-	case "read-person":
-		readPersonCommand.Parse(os.Args[2:])
-	case "check-iban":
-		checkIbanCommand.Parse(os.Args[2:])
-	case "pull-countries":
-		pullCountriesCommand.Parse(os.Args[2:])
-	case "pull-products":
-		pullProductsCommand.Parse(os.Args[2:])
-	case "pull-agreements":
-		pullAgreementsCommand.Parse(os.Args[2:])
-	case "pull-customers":
+	case modules.CustomerSearchCmd:
+		customerSearchFlagSet.Parse(os.Args[2:])
+	case modules.PullCountriesCmd:
+		pullCountriesFlagSet.Parse(os.Args[2:])
+	case modules.PullProductsCmd:
+		pullProductsFlagSet.Parse(os.Args[2:])
+	case modules.PullAgreementsCmd:
+		pullAgreementsFlagSet.Parse(os.Args[2:])
+	case modules.PullCustomersCmd:
 		pullCustomersFlagSet.Parse(os.Args[2:])
-	case "pull-networks":
-		pullNetworkFlagSet.Parse(os.Args[2:])
-	case "pull-professions":
-		pullProfessionsCommand.Parse(os.Args[2:])
-	case "pull-policies":
-		pullPoliciesCommand.Parse(os.Args[2:])
+	case modules.PullNetworksCmd:
+		pullNetworksFlagSet.Parse(os.Args[2:])
+	case modules.PullProfessionsCmd:
+		pullProfessionsFlagSet.Parse(os.Args[2:])
+	case modules.PullPoliciesCmd:
+		pullPoliciesFlagSet.Parse(os.Args[2:])
+	case modules.CheckIbanCmd:
+		checkIbanFlagSet.Parse(os.Args[2:])
 	default:
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
 
-	if readPersonCommand.Parsed() {
-		if *readPersonHelpPtr {
-			readPersonCommand.PrintDefaults()
+	if customerSearchFlagSet.Parsed() {
+		if customerSearchOptions.Help {
+			customerSearchFlagSet.PrintDefaults()
 			os.Exit(0)
-		} else if *readPersonIdPtr == "" || *readPersonUsernamePtr == "" || *readPersonAuthoritiesPtr == "" {
-			readPersonCommand.PrintDefaults()
-			os.Exit(1)
 		}
-		modules.CustomerSearch(
-			*readPersonIdPtr,
-			*readPersonLegalPtr,
-			*readPersonUsernamePtr,
-			*readPersonAuthoritiesPtr,
-			*readPersonVerbosePtr)
+		modules.CustomerSearch(&customerSearchOptions)
 	}
 
-	if pullCountriesCommand.Parsed() {
-		if *pullCountriesHelpPtr {
-			pullCountriesCommand.PrintDefaults()
+	if pullCountriesFlagSet.Parsed() {
+		if pullCountriesOptions.Help {
+			pullCountriesFlagSet.PrintDefaults()
 			os.Exit(0)
 		}
-		modules.PullCountries(*pullCountriesVerbosePtr)
+		modules.PullCountries(&pullCountriesOptions)
 	}
 
-	if pullProductsCommand.Parsed() {
-		if *pullProductsHelpPtr {
-			pullProductsCommand.PrintDefaults()
+	if pullProductsFlagSet.Parsed() {
+		if pullProductsOptions.Help {
+			pullProductsFlagSet.PrintDefaults()
 			os.Exit(0)
 		}
-		modules.PullProducts(*pullProductsVerbosePtr)
+		modules.PullProducts(&pullProductsOptions)
 	}
 
-	if pullAgreementsCommand.Parsed() {
-		if *pullAgreementsHelpPtr {
-			pullAgreementsCommand.PrintDefaults()
+	if pullAgreementsFlagSet.Parsed() {
+		if pullAgreementsOptions.Help {
+			pullAgreementsFlagSet.PrintDefaults()
 			os.Exit(0)
 		}
-		modules.PullAgreements(*pullAgreementsProductPtr, *pullAgreementsVerbosePtr)
+		modules.PullAgreements(&pullAgreementsOptions)
 	}
 
-	if pullNetworkFlagSet.Parsed() {
-		if pullNetworkOptions.Help {
-			pullNetworkFlagSet.PrintDefaults()
+	if pullNetworksFlagSet.Parsed() {
+		if pullNetworksOptions.Help {
+			pullNetworksFlagSet.PrintDefaults()
 			os.Exit(0)
 		}
-		modules.PullNetworks(&pullNetworkOptions)
+		modules.PullNetworks(&pullNetworksOptions)
 	}
 
 	if pullCustomersFlagSet.Parsed() {
@@ -153,41 +126,20 @@ func main() {
 		modules.PullCustomers(&pullCustomersOptions)
 	}
 
-	if pullProfessionsCommand.Parsed() {
-		if *pullProfessionsHelpPtr {
-			pullProfessionsCommand.PrintDefaults()
+	if pullProfessionsFlagSet.Parsed() {
+		if pullProfessionsOptions.Help {
+			pullProfessionsFlagSet.PrintDefaults()
 			os.Exit(0)
 		}
-		modules.PullProfessions(*pullProfessionsVerbosePtr)
+		modules.PullProfessions(&pullProfessionsOptions)
 	}
 
-	if pullPoliciesCommand.Parsed() {
-		if *pullPoliciesHelpPtr {
-			pullPoliciesCommand.PrintDefaults()
+	if checkIbanFlagSet.Parsed() {
+		if checkIbanOptions.Help {
+			checkIbanFlagSet.PrintDefaults()
 			os.Exit(0)
-		} else if *pullPoliciesProduct == "" || *pullPoliciesUsernamePtr == "" || *pullPoliciesAuthoritiesPtr == "" {
-			pullPoliciesCommand.PrintDefaults()
-			os.Exit(1)
 		}
-		request := modules.PolicyPullRequest{
-			EntityId:     *pullPoliciesIdPtr,
-			ExternalCode: *pullPoliciesExternalCodePtr,
-			AgreementId:  *pullPoliciesAgremmentPtr}
-		auth := client.Authorization{
-			Username:    *pullPoliciesUsernamePtr,
-			Authorities: *pullPoliciesAuthoritiesPtr}
-		modules.PullPolicies(*pullPoliciesProduct, request, auth, *pullPoliciesVerbosePtr)
-	}
-
-	if checkIbanCommand.Parsed() {
-		if *checkIbanHelpPtr {
-			checkIbanCommand.PrintDefaults()
-			os.Exit(0)
-		} else if *checkIbanValuePtr == "" {
-			checkIbanCommand.PrintDefaults()
-			os.Exit(1)
-		}
-		modules.CheckIban(*checkIbanCountryPtr, *checkIbanValuePtr, *checkIbanVerbosePtr)
+		modules.CheckIban(&checkIbanOptions)
 	}
 }
 
@@ -196,13 +148,13 @@ func usage() {
 Usage: hodei-cli COMMAND [OPTIONS]")
 
 Commands:
-  read-person
-  pull-countries
-  pull-products
-  pull-agreements
-  pull-networks
-  pull-policies
-  pull-professions
-  check-iban
-  version`)
+  ` + modules.CustomerSearchCmd + `
+  ` + modules.PullCountriesCmd + `
+  ` + modules.PullProductsCmd + `
+  ` + modules.PullAgreementsCmd + `
+  ` + modules.PullNetworksCmd + `
+  ` + modules.PullPoliciesCmd + `  
+  ` + modules.PullProfessionsCmd + `
+  ` + modules.CheckIbanCmd + `
+  ` + versionCmd)
 }

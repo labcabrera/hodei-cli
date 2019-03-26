@@ -10,7 +10,9 @@ import (
 	"github.com/streadway/amqp"
 )
 
-type PullNetworkOptions struct {
+const PullNetworksCmd = "pull-networks"
+
+type PullNetworksOptions struct {
 	Id           string
 	ExternalCode string
 	IdCard       string
@@ -20,7 +22,7 @@ type PullNetworkOptions struct {
 	Help         bool
 }
 
-func PullNetworks(options *PullNetworkOptions) {
+func PullNetworks(options *PullNetworksOptions) {
 	if options.Verbose {
 		log.Printf("Pulling networks")
 	}
@@ -40,8 +42,8 @@ func PullNetworks(options *PullNetworkOptions) {
 	return
 }
 
-func PullNetworkFlagSet(options *PullNetworkOptions) *flag.FlagSet {
-	fs := flag.NewFlagSet("pull-networks", flag.ExitOnError)
+func PullNetworksFlagSet(options *PullNetworksOptions) *flag.FlagSet {
+	fs := flag.NewFlagSet(PullNetworksCmd, flag.ExitOnError)
 	fs.StringVar(&options.Id, "id", "", "Entity identifier")
 	fs.StringVar(&options.ExternalCode, "externalcode", "", "Entity external code")
 	fs.StringVar(&options.IdCard, "idcard", "", "Entity IdCard")
