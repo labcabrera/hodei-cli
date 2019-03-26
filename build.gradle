@@ -1,7 +1,11 @@
 plugins {
-    id 'com.github.blindpirate.gogradle' version '0.11.3'
+	id 'com.github.blindpirate.gogradle' version '0.11.3'
 }
 
 golang {
-    packagePath = 'github.com/labcabrera/hodei-cli'
+	packagePath = 'github.com/labcabrera/hodei-cli'
+}
+
+goBuild {
+	outputLocation = "$System.env.GOPATH/bin/hodei-cli"
 }
