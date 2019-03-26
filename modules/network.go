@@ -23,7 +23,6 @@ type PullNetworkOptions struct {
 func PullNetworks(options *PullNetworkOptions) {
 	if options.Verbose {
 		log.Printf("Pulling networks")
-		log.Printf("Username: %s", options.Username)
 	}
 	if options.Id == "" && options.ExternalCode == "" && options.IdCard == "" {
 		fmt.Println("Required one pull search method parameter")
@@ -41,7 +40,7 @@ func PullNetworks(options *PullNetworkOptions) {
 	return
 }
 
-func NetworkFlagset(options *PullNetworkOptions) *flag.FlagSet {
+func PullNetworkFlagSet(options *PullNetworkOptions) *flag.FlagSet {
 	fs := flag.NewFlagSet("pull-networks", flag.ExitOnError)
 	fs.StringVar(&options.Id, "id", "", "Entity identifier")
 	fs.StringVar(&options.ExternalCode, "externalcode", "", "Entity external code")

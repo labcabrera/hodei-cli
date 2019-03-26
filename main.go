@@ -57,7 +57,12 @@ func main() {
 	checkIbanHelpPtr := checkIbanCommand.Bool("help", false, "Help")
 
 	pullNetworkOptions := modules.PullNetworkOptions{}
-	pullNetworkFlagSet := modules.NetworkFlagset(&pullNetworkOptions)
+	pullNetworkFlagSet := modules.PullNetworkFlagSet(&pullNetworkOptions)
+
+	pullCustomersOptions := modules.PullCustomerOptions{}
+	pullCustomersFlagSet := modules.PullCustomersFlagSet(&pullCustomersOptions)
+
+	//pullCustomersOptions := modules.PullCustomersOptions{}
 
 	if len(os.Args) < 2 {
 		usage()
@@ -79,6 +84,8 @@ func main() {
 		pullProductsCommand.Parse(os.Args[2:])
 	case "pull-agreements":
 		pullAgreementsCommand.Parse(os.Args[2:])
+	case "pull-customers":
+		pullCustomersFlagSet.Parse(os.Args[2:])
 	case "pull-networks":
 		pullNetworkFlagSet.Parse(os.Args[2:])
 	case "pull-professions":
@@ -136,6 +143,14 @@ func main() {
 			os.Exit(0)
 		}
 		modules.PullNetworks(&pullNetworkOptions)
+	}
+
+	if pullCustomersFlagSet.Parsed() {
+		if pullCustomersOptions.Help {
+			pullCustomersFlagSet.PrintDefaults()
+			os.Exit(0)
+		}
+		modules.PullCustomers(&pullCustomersOptions)
 	}
 
 	if pullProfessionsCommand.Parsed() {
