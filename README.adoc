@@ -8,9 +8,13 @@ través de RabbitMQ.
 == Comandos
 
 |===
-|`read-person`            |Recupera el JSON de una determinada persona de MongoDB a partir del identificador.
+|`read-customer`          |Recupera el JSON de una determinada persona de MongoDB a partir del identificador.
 |`pull-countries`         |Envía un mensaje de sincronización de países.
-|`pull-products`          |Envía un mensaje de sincronización de productos y acuerdos marco.
+|`pull-products`          |Envía un mensaje de sincronización de productos.
+|`pull-agreements`        |Envía un mensaje de sincronización de acuerdos marco.
+|`pull-networks`          |Envía un mensaje de sincronización de comercializadoras.
+|`pull-customers`         |Envía un mensaje de sincronización de personas físicas y jurídicas.
+|`pull-professions`       |Envía un mensaje de sincronización de profesiones.
 |`pull-policies`          |Envía un mensaje de sincronización de pólizas.
 |`check-iban`             |Envía un mensaje para la validación de un determinado IBAN.
 |===
@@ -26,6 +30,14 @@ Rabbit. El formato esperado es el siguiente:
 APP_AMQP_URI=guest:guest@localhost:5672/
 ----
 
+
+== Ejemplos
+
+----
+hodei-cli pull-networks -idcard 70111222A -u demo -a -demo
+
+hodei-cli pull-policies -product ppi -agreement 20725 -u demo -a demo
+----
 
 == Instalación
 

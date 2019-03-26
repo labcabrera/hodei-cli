@@ -10,7 +10,7 @@ import (
 	"github.com/labcabrera/hodei-cli/modules"
 )
 
-const version = "0.3.0"
+const version = "0.4.0"
 const versionCmd = "version"
 
 func main() {
@@ -132,6 +132,14 @@ func main() {
 			os.Exit(0)
 		}
 		modules.PullProfessions(&pullProfessionsOptions)
+	}
+
+	if pullPoliciesFlagSet.Parsed() {
+		if pullPoliciesOptions.Help {
+			pullPoliciesFlagSet.PrintDefaults()
+			os.Exit(0)
+		}
+		modules.PullPolicies(&pullPoliciesOptions)
 	}
 
 	if checkIbanFlagSet.Parsed() {

@@ -1,10 +1,9 @@
 package modules
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
-	"log"
+	"os"
 
 	"github.com/labcabrera/hodei-cli/client"
 	"github.com/streadway/amqp"
@@ -24,30 +23,25 @@ type PullPoliciesOptions struct {
 }
 
 func PullPolicies(options *PullPoliciesOptions) {
-	switch options.Product {
-	case "":
-		fmt.Println("Required argument product")
-		return
-	case "ppi":
-		log.Printf("Agreement: %s", options.AgreementId)
-
-		bodyBinary, err := json.Marshal(options)
-		if err != nil {
-			log.Fatalf("%s: %s", "Error marshalling request", err)
-			return
-		}
-		body := string(bodyBinary)
-
-		//TODO
-		body = `{"agreementId":"` + options.AgreementId + `"}`
-		headers := amqp.Table{
-			"App-Username":    options.Username,
-			"App-Authorities": options.Authorities,
-		}
-		client.SendMessageWithHeaders("ppi.referential", "policy.pull", body, headers, options.Verbose)
-	default:
-		log.Fatalf("Unknown product %s", options.Product)
+	if options.Product == "" {
+		fmt.Println("Missing product parameter")
+		os.Exit(1)
+	} else if options.Username == "" || options.Authorities == "" {
+		fmt.Println("Missing security parameters")
+		os.Exit(1)
 	}
+	productMapping := map[string]string{
+		"ppi": "ppi.referential",
+	}
+	exchange := productMapping[options.Product]
+
+	body := `{"id": "` + options.Id + `", "externalCode": "` + options.ExternalCode + `", "agreementId":"` + options.AgreementId + `"}`
+	headers := amqp.Table{
+		"App-Username":    options.Username,
+		"App-Authorities": options.Authorities,
+	}
+	client.SendMessageWithHeaders(exchange, "policy.pull", body, headers, options.Verbose)
+	return
 }
 
 func PullPoliciesFlagSet(options *PullPoliciesOptions) *flag.FlagSet {
