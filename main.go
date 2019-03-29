@@ -161,8 +161,9 @@ Commands:
   ` + modules.PullProductsCmd + `
   ` + modules.PullAgreementsCmd + `
   ` + modules.PullNetworksCmd + `
-  ` + modules.PullPoliciesCmd + `  
+  ` + modules.PullCustomersCmd + `
   ` + modules.PullProfessionsCmd + `
+  ` + modules.PullPoliciesCmd + `  
   ` + modules.CheckIbanCmd + `
   ` + versionCmd)
 }
