@@ -49,6 +49,9 @@ func main() {
 	checkIbanOptions := modules.CheckIbanOptions{}
 	checkIbanFlagSet := modules.CheckIbanFlagSet(&checkIbanOptions)
 
+	mongoResetOptions := modules.MongoResetOptions{}
+	mongoResetFlagSet := modules.MongoResetFlagSet(&mongoResetOptions)
+
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	switch os.Args[1] {
@@ -73,6 +76,8 @@ func main() {
 		pullPoliciesFlagSet.Parse(os.Args[2:])
 	case modules.CheckIbanCmd:
 		checkIbanFlagSet.Parse(os.Args[2:])
+	case modules.MongoResetCmd:
+		mongoResetFlagSet.Parse(os.Args[2:])
 	default:
 		flag.PrintDefaults()
 		os.Exit(1)
@@ -149,6 +154,14 @@ func main() {
 		}
 		modules.CheckIban(&checkIbanOptions)
 	}
+
+	if mongoResetFlagSet.Parsed() {
+		if mongoResetOptions.Help {
+			mongoResetFlagSet.PrintDefaults()
+			os.Exit(0)
+		}
+		modules.MongoReset(&mongoResetOptions)
+	}
 }
 
 func usage() {
@@ -165,5 +178,6 @@ Commands:
   ` + modules.PullProfessionsCmd + `
   ` + modules.PullPoliciesCmd + `  
   ` + modules.CheckIbanCmd + `
+  ` + modules.MongoResetCmd + `
   ` + versionCmd)
 }
