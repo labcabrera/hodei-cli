@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"math/rand"
 	"os"
@@ -15,7 +14,6 @@ const versionCmd = "version"
 
 func main() {
 
-	// Check command argument
 	if len(os.Args) < 2 {
 		usage()
 		return
@@ -54,7 +52,9 @@ func main() {
 
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	switch os.Args[1] {
+	cmd := os.Args[1]
+
+	switch cmd {
 	case versionCmd:
 		fmt.Println("Hodei cli", version)
 		os.Exit(0)
@@ -79,7 +79,8 @@ func main() {
 	case modules.MongoResetCmd:
 		mongoResetFlagSet.Parse(os.Args[2:])
 	default:
-		flag.PrintDefaults()
+		fmt.Printf("%s: '%s' is not a hodei-cli command.\n", os.Args[0], cmd)
+		usage()
 		os.Exit(1)
 	}
 

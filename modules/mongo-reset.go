@@ -25,11 +25,11 @@ func MongoReset(cmdOptions *MongoResetOptions) {
 	mongoUri, definedUri := os.LookupEnv("APP_MONGO_URI")
 	if !definedUri {
 		mongoUri = "mongodb://localhost:27017"
-		log.Printf("Cleaning mongo documents")
+		log.Printf("Using default mongo URI %s", mongoUri)
 	}
 
 	if cmdOptions.Verbose {
-		log.Printf("Cleaning mongo documents (%s)", mongoUri)
+		log.Printf("Cleaning documents")
 	}
 
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
@@ -39,22 +39,25 @@ func MongoReset(cmdOptions *MongoResetOptions) {
 		os.Exit(1)
 	}
 
-	client.Database("cnp-actions").Collection("entityActions").DeleteMany(context.Background(), bson.D{})
-	client.Database("cnp-commons").Collection("batchJobExecutions").DeleteMany(context.Background(), bson.D{})
-	client.Database("cnp-commons").Collection("batchJobInstances").DeleteMany(context.Background(), bson.D{})
-	client.Database("cnp-commons").Collection("batchSequences").DeleteMany(context.Background(), bson.D{})
-	client.Database("cnp-commons").Collection("batchStepExecutions").DeleteMany(context.Background(), bson.D{})
-	client.Database("cnp-commons").Collection("batchStepExecutions").DeleteMany(context.Background(), bson.D{})
-	//TODO dont remove networks after referential sync changes
-	client.Database("cnp-commons").Collection("networks").DeleteMany(context.Background(), bson.D{})
-	client.Database("cnp-customers").Collection("legalEntities").DeleteMany(context.Background(), bson.D{})
-	client.Database("cnp-customers").Collection("persons").DeleteMany(context.Background(), bson.D{})
-	client.Database("ppi-policies").Collection("policies").DeleteMany(context.Background(), bson.D{})
-
-	if cmdOptions.Verbose {
-		log.Printf("Operacion complete")
+	collectionMap := map[string]string{
+		"entityActions":       "cnp-actions",
+		"batchJobExecutions":  "cnp-commons",
+		"batchJobInstances":   "cnp-commons",
+		"batchSequences":      "cnp-commons",
+		"batchStepExecutions": "cnp-commons",
+		"networks":            "cnp-commons", //TODO temporal remove for referential sync changes
+		"legalEntities":       "cnp-customers",
+		"persons":             "cnp-customers",
+		"policies":            "ppi-policies",
+	}
+	for table, database := range collectionMap {
+		log.Printf("Removing documents from %s.%s", database, table)
+		client.Database(database).Collection(table).DeleteMany(context.Background(), bson.D{})
 	}
 
+	if cmdOptions.Verbose {
+		log.Printf("Reset complete")
+	}
 }
 
 func MongoResetFlagSet(options *MongoResetOptions) *flag.FlagSet {
