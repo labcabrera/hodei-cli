@@ -28,7 +28,7 @@ func PullAgreements(options *PullAgreementsOptions) {
 		"App-Username":    options.Username,
 		"App-Authorities": options.Authorities,
 	}
-	body := "{}"
+	body := `{"id": "` + options.Id + `","externalCode": "` + options.ExternalCode + `"}`
 	client.SendMessageWithHeaders("cnp.referential", "agreement.pull", body, headers, options.Verbose)
 }
 
