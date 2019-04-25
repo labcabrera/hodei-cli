@@ -49,7 +49,6 @@ func MongoReset(cmdOptions *MongoResetOptions) {
 		"persons":             "cnp-customers",
 		"policies":            "ppi-policies",
 		"documentCollections": "cnp-documents",
-		//"networks":          "cnp-commons",
 	}
 	for table, database := range collectionMap {
 		log.Printf("Removing documents from %s.%s", database, table)

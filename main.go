@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"os"
 	"time"
@@ -50,6 +51,9 @@ func main() {
 	mongoResetOptions := modules.MongoResetOptions{}
 	mongoResetFlagSet := modules.MongoResetFlagSet(&mongoResetOptions)
 
+	signatureRequestOptions := modules.SignatureRequestOptions{}
+	signatureRequestFlagSet := modules.SignatureRequestFlagSet(&signatureRequestOptions)
+
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	cmd := os.Args[1]
@@ -78,6 +82,8 @@ func main() {
 		checkIbanFlagSet.Parse(os.Args[2:])
 	case modules.MongoResetCmd:
 		mongoResetFlagSet.Parse(os.Args[2:])
+	case modules.SignatureRequestCmd:
+		signatureRequestFlagSet.Parse(os.Args[2:])
 	default:
 		fmt.Printf("%s: '%s' is not a hodei-cli command.\n", os.Args[0], cmd)
 		usage()
@@ -163,6 +169,19 @@ func main() {
 		}
 		modules.MongoReset(&mongoResetOptions)
 	}
+
+	if signatureRequestFlagSet.Parsed() {
+		if signatureRequestOptions.Help {
+			signatureRequestFlagSet.PrintDefaults()
+			os.Exit(0)
+		}
+		res, err := modules.SignatureRequest(&signatureRequestOptions)
+		if err != nil {
+			log.Fatal(err)
+		} else {
+			fmt.Println(res)
+		}
+	}
 }
 
 func usage() {
@@ -180,5 +199,6 @@ Commands:
   ` + modules.PullPoliciesCmd + `  
   ` + modules.CheckIbanCmd + `
   ` + modules.MongoResetCmd + `
+  ` + modules.SignatureRequestCmd + `
   ` + versionCmd)
 }
