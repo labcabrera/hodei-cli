@@ -41,10 +41,10 @@ func MongoReset(cmdOptions *MongoResetOptions) {
 
 	collectionMap := map[string]string{
 		"entityActions":       "cnp-actions",
-		"batchJobExecutions":  "cnp-commons",
-		"batchJobInstances":   "cnp-commons",
-		"batchSequences":      "cnp-commons",
-		"batchStepExecutions": "cnp-commons",
+		"batchJobExecutions":  "cnp-actions",
+		"batchJobInstances":   "cnp-actions",
+		"batchSequences":      "cnp-actions",
+		"batchStepExecutions": "cnp-actions",
 		"legalEntities":       "cnp-customers",
 		"persons":             "cnp-customers",
 		"policies":            "ppi-policies",
