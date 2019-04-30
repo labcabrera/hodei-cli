@@ -45,6 +45,9 @@ func main() {
 	pullPoliciesOptions := modules.PullPoliciesOptions{}
 	pullPoliciesFlagSet := modules.PullPoliciesFlagSet(&pullPoliciesOptions)
 
+	pullOrdersOptions := modules.PullOrdersOptions{}
+	pullOrdersFlagSet := modules.PullOrdersFlagSet(&pullOrdersOptions)
+
 	checkIbanOptions := modules.CheckIbanOptions{}
 	checkIbanFlagSet := modules.CheckIbanFlagSet(&checkIbanOptions)
 
@@ -78,6 +81,8 @@ func main() {
 		pullProfessionsFlagSet.Parse(os.Args[2:])
 	case modules.PullPoliciesCmd:
 		pullPoliciesFlagSet.Parse(os.Args[2:])
+	case modules.PullOrdersCmd:
+		pullOrdersFlagSet.Parse(os.Args[2:])
 	case modules.CheckIbanCmd:
 		checkIbanFlagSet.Parse(os.Args[2:])
 	case modules.MongoResetCmd:
@@ -154,6 +159,14 @@ func main() {
 		modules.PullPolicies(&pullPoliciesOptions)
 	}
 
+	if pullOrdersFlagSet.Parsed() {
+		if pullOrdersOptions.Help {
+			pullOrdersFlagSet.PrintDefaults()
+			os.Exit(0)
+		}
+		modules.PullOrders(&pullOrdersOptions)
+	}
+
 	if checkIbanFlagSet.Parsed() {
 		if checkIbanOptions.Help {
 			checkIbanFlagSet.PrintDefaults()
@@ -196,7 +209,8 @@ Commands:
   ` + modules.PullNetworksCmd + `
   ` + modules.PullCustomersCmd + `
   ` + modules.PullProfessionsCmd + `
-  ` + modules.PullPoliciesCmd + `  
+  ` + modules.PullPoliciesCmd + `
+  ` + modules.PullOrdersCmd + `
   ` + modules.CheckIbanCmd + `
   ` + modules.MongoResetCmd + `
   ` + modules.SignatureRequestCmd + `
