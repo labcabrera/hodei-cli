@@ -22,7 +22,6 @@ import (
 	"go.mongodb.org/mongo-driver/x/bsonx"
 	"go.mongodb.org/mongo-driver/x/mongo/driverlegacy/topology"
 	"go.mongodb.org/mongo-driver/x/network/command"
-	"go.mongodb.org/mongo-driver/x/network/connection"
 	"go.mongodb.org/mongo-driver/x/network/connstring"
 	"go.mongodb.org/mongo-driver/x/network/description"
 )
@@ -86,10 +85,10 @@ func MonitoredTopology(t *testing.T, dbName string, monitor *event.CommandMonito
 		topology.WithServerOptions(func(opts ...topology.ServerOption) []topology.ServerOption {
 			return append(
 				opts,
-				topology.WithConnectionOptions(func(opts ...connection.Option) []connection.Option {
+				topology.WithConnectionOptions(func(opts ...topology.ConnectionOption) []topology.ConnectionOption {
 					return append(
 						opts,
-						connection.WithMonitor(func(*event.CommandMonitor) *event.CommandMonitor {
+						topology.WithMonitor(func(*event.CommandMonitor) *event.CommandMonitor {
 							return monitor
 						}),
 					)
@@ -102,11 +101,11 @@ func MonitoredTopology(t *testing.T, dbName string, monitor *event.CommandMonito
 	if err != nil {
 		t.Fatal(err)
 	} else {
-		monitoredTopology.Connect(context.Background())
-		s, err := monitoredTopology.SelectServer(context.Background(), description.WriteSelector())
+		monitoredTopology.Connect()
+		s, err := monitoredTopology.SelectServerLegacy(context.Background(), description.WriteSelector())
 		require.NoError(t, err)
 
-		c, err := s.Connection(context.Background())
+		c, err := s.ConnectionLegacy(context.Background())
 		require.NoError(t, err)
 
 		_, err = (&command.Write{
@@ -128,10 +127,10 @@ func GlobalMonitoredTopology(t *testing.T, monitor *event.CommandMonitor) *topol
 		topology.WithServerOptions(func(opts ...topology.ServerOption) []topology.ServerOption {
 			return append(
 				opts,
-				topology.WithConnectionOptions(func(opts ...connection.Option) []connection.Option {
+				topology.WithConnectionOptions(func(opts ...topology.ConnectionOption) []topology.ConnectionOption {
 					return append(
 						opts,
-						connection.WithMonitor(func(*event.CommandMonitor) *event.CommandMonitor {
+						topology.WithMonitor(func(*event.CommandMonitor) *event.CommandMonitor {
 							return monitor
 						}),
 					)
@@ -146,11 +145,11 @@ func GlobalMonitoredTopology(t *testing.T, monitor *event.CommandMonitor) *topol
 		if err != nil {
 			monitoredTopologyErr = err
 		} else {
-			monitoredTopology.Connect(context.Background())
-			s, err := monitoredTopology.SelectServer(context.Background(), description.WriteSelector())
+			monitoredTopology.Connect()
+			s, err := monitoredTopology.SelectServerLegacy(context.Background(), description.WriteSelector())
 			require.NoError(t, err)
 
-			c, err := s.Connection(context.Background())
+			c, err := s.ConnectionLegacy(context.Background())
 			require.NoError(t, err)
 
 			_, err = (&command.Write{
@@ -178,11 +177,11 @@ func Topology(t *testing.T) *topology.Topology {
 		if err != nil {
 			liveTopologyErr = err
 		} else {
-			liveTopology.Connect(context.Background())
-			s, err := liveTopology.SelectServer(context.Background(), description.WriteSelector())
+			liveTopology.Connect()
+			s, err := liveTopology.SelectServerLegacy(context.Background(), description.WriteSelector())
 			require.NoError(t, err)
 
-			c, err := s.Connection(context.Background())
+			c, err := s.ConnectionLegacy(context.Background())
 			require.NoError(t, err)
 
 			_, err = (&command.Write{
@@ -207,7 +206,7 @@ func TopologyWithConnString(t *testing.T, cs connstring.ConnString) *topology.To
 	if err != nil {
 		t.Fatal("Could not construct topology")
 	}
-	err = topology.Connect(context.Background())
+	err = topology.Connect()
 	if err != nil {
 		t.Fatal("Could not start topology connection")
 	}
