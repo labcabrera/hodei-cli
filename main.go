@@ -164,7 +164,12 @@ func main() {
 			pullOrdersFlagSet.PrintDefaults()
 			os.Exit(0)
 		}
-		modules.PullOrders(&pullOrdersOptions)
+		res, err := modules.PullOrders(&pullOrdersOptions)
+		if err != nil {
+			log.Fatal(err)
+		} else {
+			fmt.Println(res)
+		}
 	}
 
 	if checkIbanFlagSet.Parsed() {

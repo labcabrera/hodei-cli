@@ -21,7 +21,7 @@ type PullOrdersOptions struct {
 	Help               bool
 }
 
-func PullOrders(options *PullOrdersOptions) {
+func PullOrders(options *PullOrdersOptions) (res string, err error) {
 	if options.Verbose {
 		log.Printf("Pulling orders from referential API")
 	}
@@ -35,6 +35,8 @@ func PullOrders(options *PullOrdersOptions) {
 		`","policyExternalCode":"` + options.PolicyExternalCode +
 		`"}`
 	client.SendMessageWithHeaders("cnp.referential", "order.pull", body, headers, options.Verbose)
+	res, err = client.SendAndReceive("cnp.sepa", "iban.validation", body, headers, options.Verbose)
+	return
 }
 
 func PullOrdersFlagSet(options *PullOrdersOptions) *flag.FlagSet {
