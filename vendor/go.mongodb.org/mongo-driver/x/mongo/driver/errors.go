@@ -2,6 +2,7 @@ package driver
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -16,10 +17,17 @@ var (
 )
 
 var (
+	// UnknownTransactionCommitResult is an error label for unknown transaction commit results.
+	UnknownTransactionCommitResult = "UnknownTransactionCommitResult"
 	// TransientTransactionError is an error label for transient errors with transactions.
 	TransientTransactionError = "TransientTransactionError"
 	// NetworkError is an error label for network errors.
 	NetworkError = "NetworkError"
+	// ErrCursorNotFound is the cursor not found error for legacy find operations.
+	ErrCursorNotFound = errors.New("cursor not found")
+	// ErrUnacknowledgedWrite is returned from functions that have an unacknowledged
+	// write concern.
+	ErrUnacknowledgedWrite = errors.New("unacknowledged write")
 )
 
 // QueryFailureError is an error representing a command failure as a document.
@@ -77,12 +85,18 @@ func (wce WriteCommandError) Retryable() bool {
 // WriteConcernError is a write concern failure that occurred as a result of a
 // write operation.
 type WriteConcernError struct {
+	Name    string
 	Code    int64
 	Message string
 	Details bsoncore.Document
 }
 
-func (wce WriteConcernError) Error() string { return wce.Message }
+func (wce WriteConcernError) Error() string {
+	if wce.Name != "" {
+		return fmt.Sprintf("(%v) %v", wce.Name, wce.Message)
+	}
+	return wce.Message
+}
 
 // Retryable returns true if the error is retryable
 func (wce WriteConcernError) Retryable() bool {
@@ -202,6 +216,11 @@ func (e Error) NotMaster() bool {
 	return strings.Contains(e.Message, "not master")
 }
 
+// NamespaceNotFound returns true if this errors is a NamespaceNotFound error.
+func (e Error) NamespaceNotFound() bool {
+	return e.Code == 26 || e.Message == "ns not found"
+}
+
 // helper method to extract an error from a reader if there is one; first returned item is the
 // error if it exists, the second holds parsing errors
 func extractError(rdr bsoncore.Document) error {
@@ -215,7 +234,6 @@ func extractError(rdr bsoncore.Document) error {
 		return err
 	}
 
-	// TODO(GODRIVER-617): We need to handle write errors and write concern errors here.
 	for _, elem := range elems {
 		switch elem.Key() {
 		case "ok":
@@ -279,7 +297,7 @@ func extractError(rdr bsoncore.Document) error {
 				if code, exists := doc.Lookup("code").AsInt64OK(); exists {
 					we.Code = code
 				}
-				if msg, exists := doc.Lookup("errMsg").StringValueOK(); exists {
+				if msg, exists := doc.Lookup("errmsg").StringValueOK(); exists {
 					we.Message = msg
 				}
 				wcError.WriteErrors = append(wcError.WriteErrors, we)
@@ -293,7 +311,10 @@ func extractError(rdr bsoncore.Document) error {
 			if code, exists := doc.Lookup("code").AsInt64OK(); exists {
 				wcError.WriteConcernError.Code = code
 			}
-			if msg, exists := doc.Lookup("errMsg").StringValueOK(); exists {
+			if name, exists := doc.Lookup("codeName").StringValueOK(); exists {
+				wcError.WriteConcernError.Name = name
+			}
+			if msg, exists := doc.Lookup("errmsg").StringValueOK(); exists {
 				wcError.WriteConcernError.Message = msg
 			}
 			if info, exists := doc.Lookup("errInfo").DocumentOK(); exists {

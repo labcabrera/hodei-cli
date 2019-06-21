@@ -20,14 +20,15 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 	"go.mongodb.org/mongo-driver/x/mongo/driver"
+	"go.mongodb.org/mongo-driver/x/mongo/driver/auth"
+	"go.mongodb.org/mongo-driver/x/mongo/driver/connstring"
+	"go.mongodb.org/mongo-driver/x/mongo/driver/description"
+	"go.mongodb.org/mongo-driver/x/mongo/driver/operation"
+	"go.mongodb.org/mongo-driver/x/mongo/driver/session"
+	"go.mongodb.org/mongo-driver/x/mongo/driver/topology"
+	"go.mongodb.org/mongo-driver/x/mongo/driver/uuid"
 	"go.mongodb.org/mongo-driver/x/mongo/driverlegacy"
-	"go.mongodb.org/mongo-driver/x/mongo/driverlegacy/auth"
-	"go.mongodb.org/mongo-driver/x/mongo/driverlegacy/session"
-	"go.mongodb.org/mongo-driver/x/mongo/driverlegacy/topology"
-	"go.mongodb.org/mongo-driver/x/mongo/driverlegacy/uuid"
 	"go.mongodb.org/mongo-driver/x/network/command"
-	"go.mongodb.org/mongo-driver/x/network/connstring"
-	"go.mongodb.org/mongo-driver/x/network/description"
 )
 
 const defaultLocalThreshold = 15 * time.Millisecond
@@ -46,6 +47,7 @@ type Client struct {
 	writeConcern    *writeconcern.WriteConcern
 	registry        *bsoncodec.Registry
 	marshaller      BSONAppender
+	monitor         *event.CommandMonitor
 }
 
 // Connect creates a new Client and then initializes it using the Connect method.
@@ -137,8 +139,12 @@ func (c *Client) Ping(ctx context.Context, rp *readpref.ReadPref) error {
 		rp = c.readPreference
 	}
 
-	_, err := c.topology.SelectServerLegacy(ctx, description.ReadPrefSelector(rp))
-	return replaceErrors(err)
+	db := c.Database("admin")
+	res := db.RunCommand(ctx, bson.D{
+		{"ping", 1},
+	})
+
+	return replaceErrors(res.Err())
 }
 
 // StartSession starts a new session.
@@ -174,8 +180,9 @@ func (c *Client) StartSession(opts ...*options.SessionOptions) (Session, error) 
 	sess.RetryWrite = c.retryWrites
 
 	return &sessionImpl{
-		Client: sess,
-		topo:   c.topology,
+		clientSession: sess,
+		client:        c,
+		topo:          c.topology,
 	}, nil
 }
 
@@ -232,7 +239,7 @@ func (c *Client) configure(opts *options.ClientOptions) error {
 	}
 	// Handshaker
 	var handshaker = func(driver.Handshaker) driver.Handshaker {
-		return driver.IsMaster().AppName(appName).Compressors(comps)
+		return operation.NewIsMaster().AppName(appName).Compressors(comps)
 	}
 	// Auth & Database & Password & Username
 	if opts.Auth != nil {
@@ -335,6 +342,7 @@ func (c *Client) configure(opts *options.ClientOptions) error {
 	}
 	// Monitor
 	if opts.Monitor != nil {
+		c.monitor = opts.Monitor
 		connOpts = append(connOpts, topology.WithMonitor(
 			func(*event.CommandMonitor) *event.CommandMonitor { return opts.Monitor },
 		))
@@ -428,38 +436,46 @@ func (c *Client) ListDatabases(ctx context.Context, filter interface{}, opts ...
 	sess := sessionFromContext(ctx)
 
 	err := c.validSession(sess)
+	if sess == nil && c.topology.SessionPool != nil {
+		sess, err = session.NewClientSession(c.topology.SessionPool, c.id, session.Implicit)
+		if err != nil {
+			return ListDatabasesResult{}, err
+		}
+		defer sess.EndSession()
+	}
+
+	err = c.validSession(sess)
 	if err != nil {
 		return ListDatabasesResult{}, err
 	}
 
-	f, err := transformDocument(c.registry, filter)
+	filterDoc, err := transformBsoncoreDocument(c.registry, filter)
 	if err != nil {
 		return ListDatabasesResult{}, err
 	}
 
-	cmd := command.ListDatabases{
-		Filter:  f,
-		Session: sess,
-		Clock:   c.clock,
-	}
-
-	readSelector := description.CompositeSelector([]description.ServerSelector{
+	selector := description.CompositeSelector([]description.ServerSelector{
 		description.ReadPrefSelector(readpref.Primary()),
 		description.LatencySelector(c.localThreshold),
 	})
-	res, err := driverlegacy.ListDatabases(
-		ctx, cmd,
-		c.topology,
-		readSelector,
-		c.id,
-		c.topology.SessionPool,
-		opts...,
-	)
+	if sess != nil && sess.PinnedServer != nil {
+		selector = sess.PinnedServer
+	}
+
+	ldo := options.MergeListDatabasesOptions(opts...)
+	op := operation.NewListDatabases(filterDoc).
+		Session(sess).ReadPreference(c.readPreference).CommandMonitor(c.monitor).
+		ServerSelector(selector).ClusterClock(c.clock).Database("admin").Deployment(c.topology)
+	if ldo.NameOnly != nil {
+		op = op.NameOnly(*ldo.NameOnly)
+	}
+
+	err = op.Execute(ctx)
 	if err != nil {
 		return ListDatabasesResult{}, replaceErrors(err)
 	}
 
-	return (ListDatabasesResult{}).fromResult(res), nil
+	return newListDatabasesResultFromOperation(op.Result()), nil
 }
 
 // ListDatabaseNames returns a slice containing the names of all of the databases on the server.
@@ -536,5 +552,13 @@ func (c *Client) Watch(ctx context.Context, pipeline interface{},
 		return nil, ErrClientDisconnected
 	}
 
-	return newClientChangeStream(ctx, c, pipeline, opts...)
+	csConfig := changeStreamConfig{
+		readConcern:    c.readConcern,
+		readPreference: c.readPreference,
+		client:         c,
+		registry:       c.registry,
+		streamType:     ClientStream,
+	}
+
+	return newChangeStream(ctx, csConfig, pipeline, opts...)
 }
