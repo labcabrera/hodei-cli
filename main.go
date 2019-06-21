@@ -48,6 +48,12 @@ func main() {
 	pullOrdersOptions := modules.PullOrdersOptions{}
 	pullOrdersFlagSet := modules.PullOrdersFlagSet(&pullOrdersOptions)
 
+	pullCoveragesOptions := modules.PullCoveragesOptions{}
+	pullCoveragesFlagSet := modules.PullCoveragesFlagSet(&pullCoveragesOptions)
+
+	pullClaimsOptions := modules.PullClaimsOptions{}
+	pullClaimsFlagSet := modules.PullClaimsFlagSet(&pullClaimsOptions)
+
 	checkIbanOptions := modules.CheckIbanOptions{}
 	checkIbanFlagSet := modules.CheckIbanFlagSet(&checkIbanOptions)
 
@@ -83,6 +89,10 @@ func main() {
 		pullPoliciesFlagSet.Parse(os.Args[2:])
 	case modules.PullOrdersCmd:
 		pullOrdersFlagSet.Parse(os.Args[2:])
+	case modules.PullCoveragesCmd:
+		pullCoveragesFlagSet.Parse(os.Args[2:])
+	case modules.PullClaimsCmd:
+		pullClaimsFlagSet.Parse(os.Args[2:])
 	case modules.CheckIbanCmd:
 		checkIbanFlagSet.Parse(os.Args[2:])
 	case modules.MongoResetCmd:
@@ -172,6 +182,22 @@ func main() {
 		}
 	}
 
+	if pullCoveragesFlagSet.Parsed() {
+		if pullCoveragesOptions.Help {
+			pullCoveragesFlagSet.PrintDefaults()
+			os.Exit(0)
+		}
+		modules.PullCoverages(&pullCoveragesOptions)
+	}
+
+	if pullClaimsFlagSet.Parsed() {
+		if pullClaimsOptions.Help {
+			pullClaimsFlagSet.PrintDefaults()
+			os.Exit(0)
+		}
+		modules.PullClaims(&pullClaimsOptions)
+	}
+
 	if checkIbanFlagSet.Parsed() {
 		if checkIbanOptions.Help {
 			checkIbanFlagSet.PrintDefaults()
@@ -216,6 +242,8 @@ Commands:
   ` + modules.PullProfessionsCmd + `
   ` + modules.PullPoliciesCmd + `
   ` + modules.PullOrdersCmd + `
+  ` + modules.PullCoveragesCmd + `
+  ` + modules.PullClaimsCmd + `
   ` + modules.CheckIbanCmd + `
   ` + modules.MongoResetCmd + `
   ` + modules.SignatureRequestCmd + `
