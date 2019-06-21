@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/labcabrera/hodei-cli/client"
+	"github.com/streadway/amqp"
 )
 
 type PullAgreementsOptions struct {
@@ -23,8 +24,12 @@ func PullAgreements(options *PullAgreementsOptions) {
 	if options.Verbose {
 		log.Printf("Pulling agreements from referential API")
 	}
-	body := `{}`
-	client.SendMessage("cnp.referential", "agreement.pull", body, options.Verbose)
+	headers := amqp.Table{
+		"App-Username":    options.Username,
+		"App-Authorities": options.Authorities,
+	}
+	body := `{"id": "` + options.Id + `","externalCode": "` + options.ExternalCode + `"}`
+	client.SendMessageWithHeaders("cnp.referential", "agreement.pull", body, headers, options.Verbose)
 }
 
 func PullAgreementsFlagSet(options *PullAgreementsOptions) *flag.FlagSet {

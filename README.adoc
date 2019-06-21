@@ -16,6 +16,9 @@ través de RabbitMQ.
 |`pull-customers`         |Envía un mensaje de sincronización de personas físicas y jurídicas.
 |`pull-professions`       |Envía un mensaje de sincronización de profesiones.
 |`pull-policies`          |Envía un mensaje de sincronización de pólizas.
+|`pull-orders`            |Envía un mensaje de sincronización de órdenes.
+|`mongo-reset`            |Reestablece la base de datos a su configuración inicial.
+|`signature-request`      |Envía un mensaje de solicitud de firma de un documento.
 |`check-iban`             |Envía un mensaje para la validación de un determinado IBAN.
 |===
 
@@ -43,6 +46,9 @@ hodei-cli pull-policies -product ppi -agreement 20725 -u demo -a demo
 
 ----
 go get github.com/streadway/amqp
+
+dep ensure -add "go.mongodb.org/mongo-driver/mongo@~1.0.0"
+
 ./gradlew goClean goBuild
 ----
 

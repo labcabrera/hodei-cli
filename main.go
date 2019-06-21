@@ -1,8 +1,8 @@
 package main
 
 import (
-	"flag"
 	"fmt"
+	"log"
 	"math/rand"
 	"os"
 	"time"
@@ -10,12 +10,11 @@ import (
 	"github.com/labcabrera/hodei-cli/modules"
 )
 
-const version = "0.4.0"
+const version = "0.5.0"
 const versionCmd = "version"
 
 func main() {
 
-	// Check command argument
 	if len(os.Args) < 2 {
 		usage()
 		return
@@ -46,12 +45,29 @@ func main() {
 	pullPoliciesOptions := modules.PullPoliciesOptions{}
 	pullPoliciesFlagSet := modules.PullPoliciesFlagSet(&pullPoliciesOptions)
 
+	pullOrdersOptions := modules.PullOrdersOptions{}
+	pullOrdersFlagSet := modules.PullOrdersFlagSet(&pullOrdersOptions)
+
+	pullCoveragesOptions := modules.PullCoveragesOptions{}
+	pullCoveragesFlagSet := modules.PullCoveragesFlagSet(&pullCoveragesOptions)
+
+	pullClaimsOptions := modules.PullClaimsOptions{}
+	pullClaimsFlagSet := modules.PullClaimsFlagSet(&pullClaimsOptions)
+
 	checkIbanOptions := modules.CheckIbanOptions{}
 	checkIbanFlagSet := modules.CheckIbanFlagSet(&checkIbanOptions)
 
+	mongoResetOptions := modules.MongoResetOptions{}
+	mongoResetFlagSet := modules.MongoResetFlagSet(&mongoResetOptions)
+
+	signatureRequestOptions := modules.SignatureRequestOptions{}
+	signatureRequestFlagSet := modules.SignatureRequestFlagSet(&signatureRequestOptions)
+
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	switch os.Args[1] {
+	cmd := os.Args[1]
+
+	switch cmd {
 	case versionCmd:
 		fmt.Println("Hodei cli", version)
 		os.Exit(0)
@@ -71,10 +87,21 @@ func main() {
 		pullProfessionsFlagSet.Parse(os.Args[2:])
 	case modules.PullPoliciesCmd:
 		pullPoliciesFlagSet.Parse(os.Args[2:])
+	case modules.PullOrdersCmd:
+		pullOrdersFlagSet.Parse(os.Args[2:])
+	case modules.PullCoveragesCmd:
+		pullCoveragesFlagSet.Parse(os.Args[2:])
+	case modules.PullClaimsCmd:
+		pullClaimsFlagSet.Parse(os.Args[2:])
 	case modules.CheckIbanCmd:
 		checkIbanFlagSet.Parse(os.Args[2:])
+	case modules.MongoResetCmd:
+		mongoResetFlagSet.Parse(os.Args[2:])
+	case modules.SignatureRequestCmd:
+		signatureRequestFlagSet.Parse(os.Args[2:])
 	default:
-		flag.PrintDefaults()
+		fmt.Printf("%s: '%s' is not a hodei-cli command.\n", os.Args[0], cmd)
+		usage()
 		os.Exit(1)
 	}
 
@@ -142,12 +169,62 @@ func main() {
 		modules.PullPolicies(&pullPoliciesOptions)
 	}
 
+	if pullOrdersFlagSet.Parsed() {
+		if pullOrdersOptions.Help {
+			pullOrdersFlagSet.PrintDefaults()
+			os.Exit(0)
+		}
+		res, err := modules.PullOrders(&pullOrdersOptions)
+		if err != nil {
+			log.Fatal(err)
+		} else {
+			fmt.Println(res)
+		}
+	}
+
+	if pullCoveragesFlagSet.Parsed() {
+		if pullCoveragesOptions.Help {
+			pullCoveragesFlagSet.PrintDefaults()
+			os.Exit(0)
+		}
+		modules.PullCoverages(&pullCoveragesOptions)
+	}
+
+	if pullClaimsFlagSet.Parsed() {
+		if pullClaimsOptions.Help {
+			pullClaimsFlagSet.PrintDefaults()
+			os.Exit(0)
+		}
+		modules.PullClaims(&pullClaimsOptions)
+	}
+
 	if checkIbanFlagSet.Parsed() {
 		if checkIbanOptions.Help {
 			checkIbanFlagSet.PrintDefaults()
 			os.Exit(0)
 		}
 		modules.CheckIban(&checkIbanOptions)
+	}
+
+	if mongoResetFlagSet.Parsed() {
+		if mongoResetOptions.Help {
+			mongoResetFlagSet.PrintDefaults()
+			os.Exit(0)
+		}
+		modules.MongoReset(&mongoResetOptions)
+	}
+
+	if signatureRequestFlagSet.Parsed() {
+		if signatureRequestOptions.Help {
+			signatureRequestFlagSet.PrintDefaults()
+			os.Exit(0)
+		}
+		res, err := modules.SignatureRequest(&signatureRequestOptions)
+		if err != nil {
+			log.Fatal(err)
+		} else {
+			fmt.Println(res)
+		}
 	}
 }
 
@@ -161,8 +238,14 @@ Commands:
   ` + modules.PullProductsCmd + `
   ` + modules.PullAgreementsCmd + `
   ` + modules.PullNetworksCmd + `
-  ` + modules.PullPoliciesCmd + `  
+  ` + modules.PullCustomersCmd + `
   ` + modules.PullProfessionsCmd + `
+  ` + modules.PullPoliciesCmd + `
+  ` + modules.PullOrdersCmd + `
+  ` + modules.PullCoveragesCmd + `
+  ` + modules.PullClaimsCmd + `
   ` + modules.CheckIbanCmd + `
+  ` + modules.MongoResetCmd + `
+  ` + modules.SignatureRequestCmd + `
   ` + versionCmd)
 }
