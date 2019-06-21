@@ -1,3 +1,4 @@
 .gradle
 .gogradle
 *.code-workspace
+.project
