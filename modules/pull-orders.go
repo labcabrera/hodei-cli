@@ -35,7 +35,6 @@ func PullOrders(options *PullOrdersOptions) (res string, err error) {
 		`","policyExternalCode":"` + options.PolicyExternalCode +
 		`"}`
 	client.SendMessageWithHeaders("cnp.referential", "order.pull", body, headers, options.Verbose)
-	res, err = client.SendAndReceive("cnp.sepa", "iban.validation", body, headers, options.Verbose)
 	return
 }
 
