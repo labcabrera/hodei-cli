@@ -40,16 +40,18 @@ func MongoReset(cmdOptions *MongoResetOptions) {
 	}
 
 	collectionMap := map[string]string{
-		"entityActions":       "cnp-actions",
+		"actions":             "cnp-actions",
+		"scheduledActions":    "cnp-actions",
 		"batchJobExecutions":  "cnp-actions",
 		"batchJobInstances":   "cnp-actions",
 		"batchSequences":      "cnp-actions",
 		"batchStepExecutions": "cnp-actions",
-		"legalEntities":       "cnp-customers",
 		"persons":             "cnp-customers",
 		"policies":            "ppi-policies",
 		"documentCollections": "cnp-documents",
 		"policyOrders":        "cnp-orders",
+		"claims":              "cnp-claims",
+		"policyCoverages":     "cnp-coverages",
 	}
 	for table, database := range collectionMap {
 		log.Printf("Removing documents from %s.%s", database, table)
