@@ -2,4 +2,4 @@
 .gogradle
 *.code-workspace
 .project
-./vendor
+vendor/*
