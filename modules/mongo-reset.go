@@ -20,8 +20,6 @@ type MongoResetOptions struct {
 }
 
 func MongoReset(cmdOptions *MongoResetOptions) {
-	//TODO read confirmation
-
 	mongoUri, definedUri := os.LookupEnv("APP_MONGO_URI")
 	if !definedUri {
 		mongoUri = "mongodb://localhost:27017"
@@ -32,7 +30,9 @@ func MongoReset(cmdOptions *MongoResetOptions) {
 		log.Printf("Cleaning documents")
 	}
 
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoUri))
 	if err != nil {
 		log.Fatalf("%s: %s", "Error opening connection", err)
@@ -40,16 +40,18 @@ func MongoReset(cmdOptions *MongoResetOptions) {
 	}
 
 	collectionMap := map[string]string{
-		"entityActions":       "cnp-actions",
+		"actions":             "cnp-actions",
+		"scheduledActions":    "cnp-actions",
 		"batchJobExecutions":  "cnp-actions",
 		"batchJobInstances":   "cnp-actions",
 		"batchSequences":      "cnp-actions",
 		"batchStepExecutions": "cnp-actions",
-		"legalEntities":       "cnp-customers",
 		"persons":             "cnp-customers",
 		"policies":            "ppi-policies",
 		"documentCollections": "cnp-documents",
 		"policyOrders":        "cnp-orders",
+		"claims":              "cnp-claims",
+		"policyCoverages":     "cnp-coverages",
 	}
 	for table, database := range collectionMap {
 		log.Printf("Removing documents from %s.%s", database, table)
