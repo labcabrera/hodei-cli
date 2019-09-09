@@ -20,6 +20,26 @@ func main() {
 		return
 	}
 
+	cmd := os.Args[1]
+
+	var moduleMap map[string]modules.HodeiCliModule
+	moduleMap = make(map[string]modules.HodeiCliModule)
+
+	moduleMap[modules.ListScheduledActionsCmd] = modules.ListScheduledActionsModule{}
+	moduleMap[modules.MongoResetCmd] = modules.MongoResetModule{}
+
+	module, check := moduleMap[cmd]
+
+	if !check {
+		usage()
+		os.Exit(1)
+	} else {
+		module.Execute(os.Args[2:])
+		os.Exit(0)
+	}
+
+	//TODO convertir a modulos
+
 	// Parse cmd options
 	customerSearchOptions := modules.CustomerSearchOptions{}
 	customerSearchFlagSet := modules.CustomerSearchFlagSet(&customerSearchOptions)
@@ -57,15 +77,10 @@ func main() {
 	checkIbanOptions := modules.CheckIbanOptions{}
 	checkIbanFlagSet := modules.CheckIbanFlagSet(&checkIbanOptions)
 
-	mongoResetOptions := modules.MongoResetOptions{}
-	mongoResetFlagSet := modules.MongoResetFlagSet(&mongoResetOptions)
-
 	signatureRequestOptions := modules.SignatureRequestOptions{}
 	signatureRequestFlagSet := modules.SignatureRequestFlagSet(&signatureRequestOptions)
 
 	rand.Seed(time.Now().UTC().UnixNano())
-
-	cmd := os.Args[1]
 
 	switch cmd {
 	case versionCmd:
@@ -95,8 +110,6 @@ func main() {
 		pullClaimsFlagSet.Parse(os.Args[2:])
 	case modules.CheckIbanCmd:
 		checkIbanFlagSet.Parse(os.Args[2:])
-	case modules.MongoResetCmd:
-		mongoResetFlagSet.Parse(os.Args[2:])
 	case modules.SignatureRequestCmd:
 		signatureRequestFlagSet.Parse(os.Args[2:])
 	default:
@@ -204,14 +217,6 @@ func main() {
 			os.Exit(0)
 		}
 		modules.CheckIban(&checkIbanOptions)
-	}
-
-	if mongoResetFlagSet.Parsed() {
-		if mongoResetOptions.Help {
-			mongoResetFlagSet.PrintDefaults()
-			os.Exit(0)
-		}
-		modules.MongoReset(&mongoResetOptions)
 	}
 
 	if signatureRequestFlagSet.Parsed() {

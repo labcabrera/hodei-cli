@@ -14,19 +14,47 @@ import (
 
 const MongoResetCmd = "mongo-reset"
 
-type MongoResetOptions struct {
-	Verbose bool
-	Help    bool
+type MongoResetModule struct {
 }
 
-func MongoReset(cmdOptions *MongoResetOptions) {
+type mongoExecutionOptions struct {
+	url     string
+	verbose bool
+	help    bool
+}
+
+func (m MongoResetModule) Execute(args []string) {
+	options := mongoExecutionOptions{}
+	flagset := mongoResetCreateFlagSet(&options)
+	flagset.Parse(args)
+
+	if flagset.Parsed() {
+		if options.help {
+			flagset.PrintDefaults()
+		} else {
+			mongoReset(&options)
+		}
+	}
+}
+
+func mongoResetCreateFlagSet(options *mongoExecutionOptions) *flag.FlagSet {
+	fs := flag.NewFlagSet(MongoResetCmd, flag.ExitOnError)
+	fs.BoolVar(&options.verbose, "v", false, "Verbose")
+	fs.BoolVar(&options.help, "help", false, "Help")
+	fs.StringVar(&options.url, "url", "", "Mongo uri (optional. Default mongodb://localhost:27017)")
+	return fs
+}
+
+func mongoReset(cmdOptions *mongoExecutionOptions) {
 	mongoUri, definedUri := os.LookupEnv("APP_MONGO_URI")
+
+	//TODO read argument if defined
 	if !definedUri {
 		mongoUri = "mongodb://localhost:27017"
 		log.Printf("Using default mongo URI %s", mongoUri)
 	}
 
-	if cmdOptions.Verbose {
+	if cmdOptions.verbose {
 		log.Printf("Cleaning documents")
 	}
 
@@ -58,14 +86,7 @@ func MongoReset(cmdOptions *MongoResetOptions) {
 		client.Database(database).Collection(table).DeleteMany(context.Background(), bson.D{})
 	}
 
-	if cmdOptions.Verbose {
+	if cmdOptions.verbose {
 		log.Printf("Reset complete")
 	}
-}
-
-func MongoResetFlagSet(options *MongoResetOptions) *flag.FlagSet {
-	fs := flag.NewFlagSet(MongoResetCmd, flag.ExitOnError)
-	fs.BoolVar(&options.Verbose, "v", false, "Verbose")
-	fs.BoolVar(&options.Help, "help", false, "Help")
-	return fs
 }
