@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"sort"
 
 	"github.com/labcabrera/hodei-cli/modules"
 )
@@ -12,16 +13,8 @@ const versionCmd = "version"
 
 func main() {
 
-	if len(os.Args) < 2 {
-		usage()
-		return
-	}
-
-	cmd := os.Args[1]
-
 	var moduleMap map[string]modules.HodeiCliModule
 	moduleMap = make(map[string]modules.HodeiCliModule)
-
 	moduleMap[modules.ListScheduledActionsCmd] = modules.ListScheduledActionsModule{}
 	moduleMap[modules.MongoResetCmd] = modules.MongoResetModule{}
 	moduleMap[modules.CheckIbanCmd] = modules.CheckIbanModule{}
@@ -29,10 +22,15 @@ func main() {
 	moduleMap[modules.CustomerSearchCmd] = modules.CustomerSearchModule{}
 	moduleMap[modules.SignatureRequestCmd] = modules.SignatureRequestModule{}
 
-	module, check := moduleMap[cmd]
+	if len(os.Args) < 2 {
+		usage(moduleMap)
+		return
+	}
 
+	cmd := os.Args[1]
+	module, check := moduleMap[cmd]
 	if !check {
-		usage()
+		usage(moduleMap)
 		os.Exit(1)
 	} else {
 		module.Execute(os.Args[2:])
@@ -40,15 +38,21 @@ func main() {
 	}
 }
 
-func usage() {
+func usage(moduleMap map[string]modules.HodeiCliModule) {
 	fmt.Println(`
 Usage: hodei-cli COMMAND [OPTIONS]")
 
-Commands:
-  ` + modules.CustomerSearchCmd + `
-  ` + modules.CheckIbanCmd + `
-  ` + modules.MongoResetCmd + `
-  ` + modules.SignatureRequestCmd + `
-  ` + modules.PpiSyncCmd + `
-  ` + versionCmd)
+Commands:`)
+
+	commands := make([]string, len(moduleMap))
+	index := 0
+	for k, _ := range moduleMap {
+		commands[index] = k
+		index = index + 1
+	}
+	sort.Strings(commands)
+	for _, cmd := range commands {
+		fmt.Printf("  %s\n", cmd)
+	}
+
 }
