@@ -11,33 +11,49 @@ import (
 
 const CustomerSearchCmd = "read-customer"
 
-type CustomerSearchOptions struct {
-	Id          string
-	Legal       bool
-	Username    string
-	Authorities string
-	Verbose     bool
-	Help        bool
+type CustomerSearchModule struct {
 }
 
-func CustomerSearch(options *CustomerSearchOptions) (res string, err error) {
-	if options.Verbose {
-		log.Printf("Searching customer %s (%s:%s)", options.Id, options.Username, options.Authorities)
+type customerSearchOptions struct {
+	id          string
+	legal       bool
+	username    string
+	authorities string
+	verbose     bool
+	help        bool
+}
+
+func (m CustomerSearchModule) Execute(args []string) {
+	options := customerSearchOptions{}
+	flagset := customerSearchCreateFlagSet(&options)
+	flagset.Parse(args)
+	if flagset.Parsed() {
+		if options.help {
+			flagset.PrintDefaults()
+		} else {
+			customerSearch(&options)
+		}
 	}
-	if options.Id == "" {
+}
+
+func customerSearch(options *customerSearchOptions) (res string, err error) {
+	if options.verbose {
+		log.Printf("Searching customer %s (%s:%s)", options.id, options.username, options.authorities)
+	}
+	if options.id == "" {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
 	personType := "person"
-	if options.Legal {
+	if options.legal {
 		personType = "legal"
 	}
 	headers := amqp.Table{
-		"App-Username":    options.Username,
-		"App-Authorities": options.Authorities,
+		"App-Username":    options.username,
+		"App-Authorities": options.authorities,
 	}
-	body := `{"1":{"type":"` + personType + `","reference":"` + options.Id + `"}}`
-	res, err = client.SendAndReceive("cnp.customer", "customer.search", body, headers, options.Verbose)
+	body := `{"1":{"type":"` + personType + `","reference":"` + options.id + `"}}`
+	res, err = client.SendAndReceive("cnp.customer", "customer.search", body, headers, options.verbose)
 	if err != nil {
 		log.Fatalf("%s: %s", "Error reading person", err)
 		return
@@ -45,12 +61,12 @@ func CustomerSearch(options *CustomerSearchOptions) (res string, err error) {
 	return
 }
 
-func CustomerSearchFlagSet(options *CustomerSearchOptions) *flag.FlagSet {
+func customerSearchCreateFlagSet(options *customerSearchOptions) *flag.FlagSet {
 	fs := flag.NewFlagSet(CustomerSearchCmd, flag.ExitOnError)
-	fs.StringVar(&options.Id, "id", "", "Entity identifier")
-	fs.StringVar(&options.Username, "u", "", "Username")
-	fs.StringVar(&options.Authorities, "a", "", "Authorities")
-	fs.BoolVar(&options.Verbose, "v", false, "Verbose")
-	fs.BoolVar(&options.Help, "help", false, "Help")
+	fs.StringVar(&options.id, "id", "", "Entity identifier")
+	fs.StringVar(&options.username, "u", "", "Username")
+	fs.StringVar(&options.authorities, "a", "", "Authorities")
+	fs.BoolVar(&options.verbose, "v", false, "Verbose")
+	fs.BoolVar(&options.help, "help", false, "Help")
 	return fs
 }

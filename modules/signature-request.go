@@ -10,42 +10,58 @@ import (
 	"github.com/streadway/amqp"
 )
 
-type SignatureRequestOptions struct {
-	DocumentId  string
-	Username    string
-	Authorities string
-	Verbose     bool
-	Help        bool
-}
-
 const SignatureRequestCmd = "signature-request"
 
-func SignatureRequest(options *SignatureRequestOptions) (res string, err error) {
-	if options.Verbose {
+type SignatureRequestModule struct {
+}
+
+type signatureRequestOptions struct {
+	documentId  string
+	username    string
+	authorities string
+	verbose     bool
+	help        bool
+}
+
+func (m SignatureRequestModule) Execute(args []string) {
+	options := signatureRequestOptions{}
+	flagset := signatureRequestModuleCreateFlagSet(&options)
+	flagset.Parse(args)
+	if flagset.Parsed() {
+		if options.help {
+			flagset.PrintDefaults()
+		} else {
+			signatureRequest(&options)
+		}
+	}
+}
+
+func signatureRequest(options *signatureRequestOptions) (res string, err error) {
+	if options.verbose {
 		log.Printf("Sending signature request")
 	}
-	if options.DocumentId == "" {
+	if options.documentId == "" {
 		fmt.Println("Required document identifier")
 		os.Exit(1)
-	} else if options.Username == "" || options.Authorities == "" {
+	} else if options.username == "" || options.authorities == "" {
 		fmt.Println("Required authorization information")
 		os.Exit(1)
 	}
 	headers := amqp.Table{
-		"App-Username":    options.Username,
-		"App-Authorities": options.Authorities,
+		"App-Username":    options.username,
+		"App-Authorities": options.authorities,
 	}
-	body := `{"documentId":"` + options.DocumentId + `"}`
-	res, err = client.SendAndReceive("cnp.esignature", "signature.request", body, headers, options.Verbose)
+	body := `{"documentId":"` + options.documentId + `"}`
+	res, err = client.SendAndReceive("cnp.esignature", "signature.request", body, headers, options.verbose)
 	return
 }
 
-func SignatureRequestFlagSet(options *SignatureRequestOptions) *flag.FlagSet {
-	fs := flag.NewFlagSet(PullAgreementsCmd, flag.ExitOnError)
-	fs.StringVar(&options.DocumentId, "id", "", "Document identifier")
-	fs.StringVar(&options.Username, "u", "", "Username")
-	fs.StringVar(&options.Authorities, "a", "", "Authorities")
-	fs.BoolVar(&options.Verbose, "v", false, "Verbose")
-	fs.BoolVar(&options.Help, "help", false, "Help")
+func signatureRequestModuleCreateFlagSet(options *signatureRequestOptions) *flag.FlagSet {
+	fs := flag.NewFlagSet(SignatureRequestCmd, flag.ExitOnError)
+	fs.StringVar(&options.documentId, "id", "", "Document identifier")
+	fs.StringVar(&options.username, "u", "", "Username")
+	fs.StringVar(&options.authorities, "a", "", "Authorities")
+	fs.BoolVar(&options.verbose, "v", false, "Verbose")
+	fs.BoolVar(&options.help, "help", false, "Help")
 	return fs
 }

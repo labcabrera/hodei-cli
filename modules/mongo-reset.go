@@ -23,6 +23,11 @@ type mongoExecutionOptions struct {
 	help    bool
 }
 
+type MongoDocument struct {
+	database string
+	document string
+}
+
 func (m MongoResetModule) Execute(args []string) {
 	options := mongoExecutionOptions{}
 	flagset := mongoResetCreateFlagSet(&options)
@@ -67,23 +72,22 @@ func mongoReset(cmdOptions *mongoExecutionOptions) {
 		os.Exit(1)
 	}
 
-	collectionMap := map[string]string{
-		"actions":             "cnp-actions",
-		"scheduledActions":    "cnp-actions",
-		"persons":             "cnp-customers",
-		"policies":            "ppi-policies",
-		"documentCollections": "cnp-documents",
-		"policyOrders":        "cnp-orders",
-		"claims":              "cnp-claims",
-		"coverages":           "cnp-coverages",
-		"orders":              "cnp-orders",
-	}
-	for table, database := range collectionMap {
-		log.Printf("Removing documents from %s.%s", database, table)
-		client.Database(database).Collection(table).DeleteMany(context.Background(), bson.D{})
-	}
+	remove("cnp-actions", "actions", client)
+	remove("cnp-actions", "scheduledActions", client)
+	remove("cnp-claims", "claims", client)
+	remove("cnp-coverages", "coverages", client)
+	remove("cnp-customers", "persons", client)
+	remove("cnp-documents", "documentCollections", client)
+	remove("cnp-orders", "orders", client)
+	remove("ppi-policies", "policies", client)
+	remove("pp-policies", "policies", client)
 
 	if cmdOptions.verbose {
 		log.Printf("Reset complete")
 	}
+}
+
+func remove(database string, document string, client *mongo.Client) {
+	log.Printf("Removing documents from %s.%s", database, document)
+	client.Database(database).Collection(document).DeleteMany(context.Background(), bson.D{})
 }

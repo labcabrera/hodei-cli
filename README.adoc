@@ -33,15 +33,6 @@ Rabbit. El formato esperado es el siguiente:
 APP_AMQP_URI=guest:guest@localhost:5672/
 ----
 
-
-== Ejemplos
-
-----
-hodei-cli pull-networks -idcard 70111222A -u demo -a -demo
-
-hodei-cli pull-policies -product ppi -agreement 20725 -u demo -a demo
-----
-
 == Instalación
 
 ----
@@ -57,4 +48,18 @@ podremos ejecutar:
 
 ----
 hodei-cli version
+----
+
+== Ejemplos
+
+Borrado de datos de desarrollo de Mongo:
+
+----
+hodei-cli mongo-reset
+----
+
+Validación de iban
+
+----
+hodei-cli check-iban -country ESP -iban ES0630010002190220000492
 ----
