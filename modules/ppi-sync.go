@@ -44,7 +44,7 @@ func ppiSync(options *ppiSyncOptions) (res string, err error) {
 		"App-Source": "hodei-cli",
 	}
 	body := `{}`
-	res, err = client.SendAndReceive("todo-ex", "todo-rt", body, headers, options.verbose)
+	res, err = client.SendAndReceive("ppi.referential", "process", body, headers, options.verbose)
 	fmt.Println(res)
 	return
 }
