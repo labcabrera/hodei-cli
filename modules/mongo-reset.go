@@ -86,6 +86,7 @@ func mongoReset(cmdOptions *mongoExecutionOptions) {
 	remove("ppi-policies", "policies", client)
 	remove("ppi-policies", "archivedPolicies", client)
 	remove("pp-policies", "archivedPolicies", client)
+	remove("pp-policies", "externalTransfers", client)
 	remove("pp-policies", "internalTransfers", client)
 	remove("pp-policies", "policies", client)
 	remove("pp-policies", "policySyncExecutions", client)
