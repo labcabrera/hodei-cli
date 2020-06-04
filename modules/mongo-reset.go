@@ -72,15 +72,16 @@ func mongoReset(cmdOptions *mongoExecutionOptions) {
 		os.Exit(1)
 	}
 
-	remove("cnp-actions", "actions", client)
+	remove("cnp-actions", "actionExecutions", client)
 	remove("cnp-actions", "archivedActions", client)
 	remove("cnp-claims", "claims", client)
 	remove("cnp-coverages", "coverages", client)
 	remove("cnp-customers", "persons", client)
 	remove("cnp-customers", "archivedPersons", client)
-	remove("cnp-documents", "documentCollections", client)
+	remove("cnp-documents", "documents", client)
 	remove("cnp-documents", "signatureCallbacks", client)
 	remove("cnp-orders", "orders", client)
+	remove("cnp-orders-pp", "orders", client)
 	remove("cnp-pedra", "amlVerifications", client)
 	remove("cnp-sid", "sidHistory", client)
 	remove("ppi-policies", "policies", client)
